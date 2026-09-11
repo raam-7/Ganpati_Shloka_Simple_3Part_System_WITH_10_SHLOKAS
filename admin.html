@@ -131,13 +131,14 @@
 
     async function requireAdminSession() {
       if (!hasSupabase || !sb) {
-        showStatus('Supabase is not configured yet. Add your project URL and anon key in config.js.', true);
+        window.location.href = 'admin-login.html';
         return null;
       }
 
       const { data: { session }, error } = await sb.auth.getSession();
       if (error) {
         showStatus(error.message || 'Unable to verify admin session.', true);
+        window.location.href = 'admin-login.html';
         return null;
       }
 

@@ -50,9 +50,11 @@
   </div>
 
   <script>
-    const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    const hasSupabase = window.isSupabaseConfigured && window.isSupabaseConfigured();
+    const sb = hasSupabase ? supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY) : null;
 
     async function checkSession() {
+      if (!sb) return;
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
         window.location.href = 'admin.html';
@@ -64,6 +66,11 @@
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const status = document.getElementById('status');
+
+      if (!sb) {
+        status.textContent = 'Supabase is not configured yet. Add your project URL and anon key in config.js.';
+        return;
+      }
 
       if (!email || !password) {
         status.textContent = 'Please enter your email and password.';
