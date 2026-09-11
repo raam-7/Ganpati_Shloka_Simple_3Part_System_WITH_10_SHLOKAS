@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Print Shlokas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    .printgrid { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: 18px; }
+    .printcard {
+      background: #fff8e9;
+      color: #3a150e;
+      border: 2px solid #a96d20;
+      border-radius: 18px;
+      padding: 22px 18px;
+      text-align: center;
+      min-height: 370px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.12);
+    }
+    .printcard h2 { color: #7b2918; margin: 12px 0; }
+    .printcard .ps { font-family: Georgia, serif; font-size: 1.12rem; line-height: 1.7; color: #1b0e0d; }
+    .printqr { width: 130px; height: 130px; margin: 14px auto; }
+    .printbtn { margin-bottom: 18px; }
+    @media print {
+      body { background: white; color: #111; }
+      .top, .printbtn, .muted.no-print { display: none !important; }
+      .wrap { width: 100%; }
+      .printgrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .printcard { break-inside: avoid; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">🖨️ SHLOKA PRINT CENTER</div>
+      <div class="nav"><a href="admin.html" class="alt">Admin</a></div>
+    </div>
+
+    <button class="btn printbtn" onclick="window.print()">🖨️ Print All</button>
+    <p class="muted no-print">All saved shlokas are shown below. Print this page on A4, cut the cards, and place each card near the Ganpati decoration.</p>
+    <div id="grid" class="printgrid"></div>
+  </div>
+
+  <script>
+    const base = location.origin + location.pathname.replace(/print\.html$/, '');
+
+    function esc(value) {
+      return String(value || '').replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[m]));
+    }
+
+    async function loadPrintCards() {
+      const grid = document.getElementById('grid');
+      let items = [];
+
+      if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
+        try {
+          const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+          const { data, error } = await sb.from('shlokas').select('*').order('id', { ascending: true });
+          if (!error && data && data.length) items = data;
+        } catch (error) {
+          console.warn('Supabase print load failed, using fallback.', error);
+        }
+      }
+
+      if (!items.length) {
+        items = window.getFallbackShlokas ? window.getFallbackShlokas() : [];
+      }
+
+      grid.innerHTML = '';
+      items.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = 'printcard';
+        const qrId = 'q' + item.id;
+        card.innerHTML = `
+          <div>॥ श्री गणेशाय नमः ॥</div>
+          <div class="muted">${esc(item.category)}</div>
+          <h2>${esc(item.title)}</h2>
+          <div class="ps">${esc(item.sanskrit)}</div>
+          <div id="${qrId}" class="printqr"></div>
+          <b>Scan to learn more</b>
+          <div style="margin-top:10px;font-size:.8rem;">Ganpati Bappa Morya</div>
+        `;
+        grid.appendChild(card);
+
+        new QRCode(document.getElementById(qrId), {
+          text: base + 'shloka.html?id=' + encodeURIComponent(item.id),
+          width: 125,
+          height: 125,
+          colorDark: '#111',
+          colorLight: '#fff'
+        });
+      });
+    }
+
+    loadPrintCards();
+  </script>
+</body>
+</html>

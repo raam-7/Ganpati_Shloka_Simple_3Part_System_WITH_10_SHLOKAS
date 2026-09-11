@@ -1,0 +1,135 @@
+window.SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL_HERE";
+window.SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+
+window.GANPATI_SHLOKAS = [
+  {
+    id: 1,
+    category: "For Mother",
+    title: "For Mother",
+    sanskrit: "स्वधर्मे निधनं श्रेयः परधर्मो भयावहः।",
+    transliteration: "Swadharme nidhanam shreyah paradharmo bhayavahah.",
+    english: "It is better to perform one’s own duty, even imperfectly, than to perform another’s duty perfectly.",
+    marathi: "स्वतःचे कर्तव्य अपूर्णपणे केले तरी ते दुसऱ्याचे कर्तव्य उत्तम प्रकारे करण्यापेक्षा श्रेष्ठ आहे.",
+    hindi: "अपने कर्तव्य को अपूर्ण रूप से करना भी दूसरे के कर्तव्य को पूर्णता से करने से श्रेष्ठ है।",
+    meaning: "Honour your own path and responsibilities instead of comparing your journey with someone else’s.",
+    message: "आईसाठी: तुमची काळजी, ताकद आणि जबाबदाऱ्या अनोख्या आहेत. प्रेमाने आणि प्रामाणिकपणे केलेले प्रत्येक कार्य मौल्यवान आहे."
+  },
+  {
+    id: 2,
+    category: "For Father",
+    title: "For Father",
+    sanskrit: "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।",
+    transliteration: "Karmany evadhikaraste ma phaleshu kadachana.",
+    english: "You have a right to your actions, but not to the fruits of those actions.",
+    marathi: "तुला तुझ्या कर्मावर अधिकार आहे; त्याच्या फळावर नाही.",
+    hindi: "तुम्हारा अधिकार केवल कर्म करने में है, उसके फल पर नहीं।",
+    meaning: "Focus on sincere effort and do not let worry about results control you.",
+    message: "वडिलांसाठी: कुटुंबासाठी केलेला प्रत्येक प्रामाणिक प्रयत्न महत्त्वाचा आहे."
+  },
+  {
+    id: 3,
+    category: "For Students",
+    title: "For Students",
+    sanskrit: "श्रद्धावान् लभते ज्ञानं तत्परः संयतेन्द्रियः।",
+    transliteration: "Shraddhavan labhate jnanam tatparah samyatendriyah.",
+    english: "One who has faith, dedication and control over the senses gains knowledge.",
+    marathi: "श्रद्धा, समर्पण आणि इंद्रियसंयम असणाऱ्या व्यक्तीला ज्ञान प्राप्त होते.",
+    hindi: "जिसमें श्रद्धा, समर्पण और इन्द्रियों पर संयम है, उसे ज्ञान प्राप्त होता है।",
+    meaning: "Consistency, attention and discipline turn learning into wisdom.",
+    message: "विद्यार्थ्यांसाठी: जिज्ञासा शिकण्याची सुरुवात आहे; पण शिस्त आणि सातत्य ज्ञानाला कौशल्यात बदलतात."
+  },
+  {
+    id: 4,
+    category: "For Professionals",
+    title: "For Professionals",
+    sanskrit: "योगः कर्मसु कौशलम्।",
+    transliteration: "Yogah karmasu kaushalam.",
+    english: "Yoga is excellence and skillfulness in action.",
+    marathi: "कर्मातील कौशल्य आणि उत्कृष्टताच योग आहे.",
+    hindi: "कर्म में कुशलता ही योग है।",
+    meaning: "Do your work with awareness, competence and integrity.",
+    message: "कामात गुणवत्ता, कौशल्य, प्रामाणिकपणा आणि जबाबदारी ठेवणे हीच खरी साधना."
+  },
+  {
+    id: 5,
+    category: "For Couples",
+    title: "For Couples",
+    sanskrit: "सुखदुःखे समे कृत्वा लाभालाभौ जयाजयौ।",
+    transliteration: "Sukha-duhkhe same kritva labhalabhau jayajayau.",
+    english: "Treat happiness and sorrow, gain and loss, victory and defeat with equanimity.",
+    marathi: "सुख-दुःख, लाभ-हानी, जय-पराजय यांना समभावाने स्वीकारावे.",
+    hindi: "सुख-दुःख, लाभ-हानि और जय-पराजय को समान भाव से स्वीकार करो।",
+    meaning: "A strong relationship needs balance through changing circumstances.",
+    message: "नात्यातील चांगले आणि कठीण दिवस दोन्ही आदर, समजूतदारपणा आणि स्थिरतेने सामोरे जा."
+  },
+  {
+    id: 6,
+    category: "For Youth",
+    title: "For Youth",
+    sanskrit: "मन एव मनुष्याणां कारणं बन्धमोक्षयोः।",
+    transliteration: "Mana eva manushyanam karanam bandhamokshayoh.",
+    english: "The mind alone can be the cause of bondage as well as liberation.",
+    marathi: "मनुष्याच्या बंधनाचे आणि मुक्तीचे कारण मनच आहे.",
+    hindi: "मनुष्य के बंधन और मुक्ति का कारण मन ही है।",
+    meaning: "Your mindset can become your greatest obstacle or your greatest strength.",
+    message: "तरुणांसाठी: मनाला दिशा दिली तर ते अडथळा न राहता तुमची सर्वात मोठी ताकद बनते."
+  },
+  {
+    id: 7,
+    category: "For People in Struggle",
+    title: "For People in Struggle",
+    sanskrit: "उद्धरेदात्मनाऽऽत्मानं नात्मानमवसादयेत्।",
+    transliteration: "Uddhared atmanatmanam natmanam avasadayet.",
+    english: "Let a person lift oneself by oneself; do not let oneself fall.",
+    marathi: "स्वतःने स्वतःला उन्नत करावे; स्वतःला खचू देऊ नये.",
+    hindi: "मनुष्य को स्वयं अपने द्वारा अपना उद्धार करना चाहिए, स्वयं को नीचे नहीं गिराना चाहिए।",
+    meaning: "When life becomes difficult, begin by strengthening yourself from within.",
+    message: "अडचणीच्या वेळी हार मानू नका. मदत घ्या, पण पुढचे सकारात्मक पाऊल स्वतः उचलण्याची ताकद जपा."
+  },
+  {
+    id: 8,
+    category: "For Everyone",
+    title: "For Everyone",
+    sanskrit: "समत्वं योग उच्यते।",
+    transliteration: "Samatvam yoga uchyate.",
+    english: "Equanimity is called Yoga.",
+    marathi: "समत्वालाच योग असे म्हटले आहे.",
+    hindi: "समत्व को ही योग कहा जाता है।",
+    meaning: "Stay balanced in success and failure, praise and criticism.",
+    message: "यश-अपयश, कौतुक-टीका यामध्ये मनाचा समतोल राखणे ही खरी शक्ती आहे."
+  },
+  {
+    id: 9,
+    category: "Control Anger",
+    title: "Control Anger",
+    sanskrit: "क्रोधाद्भवति सम्मोहः सम्मोहात्स्मृतिविभ्रमः।",
+    transliteration: "Krodhad bhavati sammohah sammohat smritivibhramah.",
+    english: "From anger comes delusion; from delusion, confusion of memory and judgment.",
+    marathi: "क्रोधामुळे भ्रम निर्माण होतो आणि भ्रमामुळे स्मरणशक्ती व विवेक गोंधळतो.",
+    hindi: "क्रोध से मोह उत्पन्न होता है और मोह से स्मृति व विवेक भ्रमित हो जाते हैं।",
+    meaning: "Uncontrolled anger can cloud judgment and lead to destructive decisions.",
+    message: "रागाच्या क्षणी थांबा, श्वास घ्या आणि मग उत्तर द्या. काही क्षणांची जाणीव मोठी चूक टाळू शकते."
+  },
+  {
+    id: 10,
+    category: "Success & Failure",
+    title: "Success & Failure",
+    sanskrit: "सिद्ध्यसिद्ध्योः समो भूत्वा समत्वं योग उच्यते।",
+    transliteration: "Siddhy-asiddhyoh samo bhutva samatvam yoga uchyate.",
+    english: "Remain even-minded in success and failure; such balance is called Yoga.",
+    marathi: "यश-अपयशात समभाव ठेवणे हाच योग आहे.",
+    hindi: "सफलता और असफलता में समभाव रखना ही योग है।",
+    meaning: "Give your best without allowing the result to define your worth.",
+    message: "यशात अहंकार नको आणि अपयशात निराशा नको. दोन्ही अनुभव प्रवासाचा भाग आहेत."
+  }
+];
+
+window.isSupabaseConfigured = function () {
+  const url = (window.SUPABASE_URL || '').trim();
+  const key = (window.SUPABASE_ANON_KEY || '').trim();
+  return !!url && !url.includes('PASTE_') && !!key && !key.includes('PASTE_');
+};
+
+window.getFallbackShlokas = function () {
+  return JSON.parse(JSON.stringify(window.GANPATI_SHLOKAS || []));
+};

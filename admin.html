@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin — Ganpati Shlokas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    body { min-height: 100vh; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+    .panel { background: rgba(255,255,255,0.06); }
+    .tablewrap { overflow-x: auto; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { border-bottom: 1px solid rgba(242,196,92,.2); padding: 12px 8px; vertical-align: top; text-align: left; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn.danger { background: #9f2b2b; color: #fff6e0; border-color: rgba(255,255,255,.1); }
+    .qr { width: 116px; height: 116px; border-radius: 12px; overflow: hidden; background: white; display: grid; place-items: center; }
+    .status { margin-top: 10px; font-size: .95rem; }
+    .status.success { color: #b9ffb6; }
+    .status.error { color: #ffb3b3; }
+    @media (max-width: 700px) { .top { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">🛕 SHLOKA ADMIN STATION</div>
+      <div class="nav">
+        <a href="index.html" class="alt">Devotee Page</a>
+        <a href="print.html" class="alt">Print Center</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="stat" id="total">0</div>
+        <div class="muted">Total Shlokas</div>
+      </section>
+
+      <section class="panel">
+        <h2>Add Shloka</h2>
+        <form class="form" id="form">
+          <div class="two">
+            <label>Category
+              <input name="category" required placeholder="For Mother / For Father / Students">
+            </label>
+            <label>Title
+              <input name="title" required placeholder="For Mother">
+            </label>
+          </div>
+          <label>Sanskrit Shloka
+            <textarea name="sanskrit" required placeholder="स्वधर्मे निधनं श्रेयः..."></textarea>
+          </label>
+          <label>Transliteration
+            <textarea name="transliteration" placeholder="Swadharme nidhanam shreyah..."></textarea>
+          </label>
+          <label>English Translation
+            <textarea name="english" required placeholder="It is better to perform one’s own duty..."></textarea>
+          </label>
+          <label>Marathi Translation
+            <textarea name="marathi" required placeholder="स्वतःचे कर्तव्य..."></textarea>
+          </label>
+          <label>Hindi Translation
+            <textarea name="hindi" required placeholder="अपने कर्तव्य को..."></textarea>
+          </label>
+          <label>Simple Meaning
+            <textarea name="meaning" placeholder="Explain the idea in easy language"></textarea>
+          </label>
+          <label>Message / Life Application
+            <textarea name="message" placeholder="A practical message for the category"></textarea>
+          </label>
+          <button class="btn" type="submit">➕ Add Shloka</button>
+          <div id="status" class="status"></div>
+        </form>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top:18px;">
+      <h2>All Shlokas & QR Codes</h2>
+      <p class="muted">Each QR opens that exact shloka. Download the QR or use the print center for physical cards.</p>
+      <div class="tablewrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Shloka</th>
+              <th>Category</th>
+              <th>QR</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>Admin station • Ganpati Bappa Morya</footer>
+  </div>
+
+  <script>
+    const hasSupabase = window.isSupabaseConfigured && window.isSupabaseConfigured();
+    const base = location.origin + location.pathname.replace(/admin\.html$/, '');
+    let data = [];
+
+    function esc(value) {
+      return String(value || '').replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[m]));
+    }
+
+    function urlFor(id) {
+      return base + 'shloka.html?id=' + encodeURIComponent(id);
+    }
+
+    function showStatus(message, isError) {
+      const el = document.getElementById('status');
+      if (!el) return;
+      el.textContent = message;
+      el.className = 'status ' + (isError ? 'error' : 'success');
+    }
+
+    async function getShlokas() {
+      if (!hasSupabase) return window.getFallbackShlokas();
+      try {
+        const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+        const { data: rows, error } = await sb.from('shlokas').select('*').order('id', { ascending: true });
+        if (error) throw error;
+        return rows && rows.length ? rows : window.getFallbackShlokas();
+      } catch (error) {
+        console.warn('Supabase load failed, using fallback dataset:', error);
+        return window.getFallbackShlokas();
+      }
+    }
+
+    function renderRows(items) {
+      const rows = document.getElementById('rows');
+      rows.innerHTML = '';
+
+      items.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        const qrId = 'qr-' + item.id;
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>
+            <b>${esc(item.title)}</b><br>
+            <span class="muted">${esc(item.sanskrit || '').slice(0, 120)}</span>
+          </td>
+          <td>${esc(item.category)}</td>
+          <td><div id="${qrId}" class="qr"></div></td>
+          <td>
+            <div class="action-row">
+              <button class="btn" type="button" onclick="downloadQR(${item.id})">Download QR</button>
+              <a class="btn alt" target="_blank" rel="noopener" href="${urlFor(item.id)}">Open</a>
+              <button class="btn danger" type="button" onclick="del(${item.id})">Delete</button>
+            </div>
+          </td>
+        `;
+        rows.appendChild(tr);
+
+        const qrBox = document.getElementById(qrId);
+        if (qrBox) {
+          new QRCode(qrBox, {
+            text: urlFor(item.id),
+            width: 110,
+            height: 110,
+            colorDark: '#111',
+            colorLight: '#fff'
+          });
+        }
+      });
+    }
+
+    async function load() {
+      data = await getShlokas();
+      document.getElementById('total').textContent = String(data.length || 0);
+      renderRows(data);
+    }
+
+    document.getElementById('form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const payload = Object.fromEntries(formData.entries());
+
+      if (!hasSupabase) {
+        const nextId = Number((window.getFallbackShlokas().at(-1)?.id || 0)) + 1;
+        window.GANPATI_SHLOKAS.push({ ...payload, id: nextId });
+        event.target.reset();
+        showStatus('Fallback data updated locally. Connect Supabase to persist it permanently.', false);
+        load();
+        return;
+      }
+
+      try {
+        const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+        const { error } = await sb.from('shlokas').insert(payload);
+        if (error) throw error;
+        event.target.reset();
+        showStatus('Shloka added successfully.', false);
+        load();
+      } catch (error) {
+        showStatus(error.message || 'Unable to add shloka.', true);
+      }
+    });
+
+    async function del(id) {
+      if (!confirm('Delete this shloka?')) return;
+
+      if (!hasSupabase) {
+        window.GANPATI_SHLOKAS = (window.GANPATI_SHLOKAS || []).filter(item => Number(item.id) !== Number(id));
+        load();
+        return;
+      }
+
+      try {
+        const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+        const { error } = await sb.from('shlokas').delete().eq('id', id);
+        if (error) throw error;
+        load();
+      } catch (error) {
+        alert(error.message || 'Unable to delete the shloka.');
+      }
+    }
+
+    function downloadQR(id) {
+      const box = document.getElementById('qr-' + id);
+      if (!box) return;
+      const canvas = box.querySelector('canvas');
+      const img = box.querySelector('img');
+      const src = canvas ? canvas.toDataURL('image/png') : (img ? img.src : '');
+      if (!src) return;
+      const a = document.createElement('a');
+      a.href = src;
+      a.download = 'shloka-' + id + '-qr.png';
+      a.click();
+    }
+
+    window.downloadQR = downloadQR;
+    window.del = del;
+    load();
+  </script>
+</body>
+</html>

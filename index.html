@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ganpati Bappa Morya</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .hero { padding-bottom: 18px; }
+    .hero-copy { max-width: 760px; margin: 0 auto; }
+    .shloka-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-top: 26px;
+    }
+    .shloka-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(242,196,92,.28);
+      border-radius: 22px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.18);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+    .shloka-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: linear-gradient(90deg, #f7d680, #c68a22, #f2c45c);
+    }
+    .shloka-chip {
+      display: inline-block;
+      background: rgba(245,213,156,.1);
+      border: 1px solid rgba(245,213,156,.25);
+      color: #f5d59c;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .shloka-sanskrit {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      color: #ffe9b4;
+      font-family: Georgia, serif;
+      margin: 12px 0 6px;
+    }
+    .ref { color: #d7ba82; font-weight: 700; margin: 8px 0 14px; }
+    .preview { color: #f0ddbb; line-height: 1.7; min-height: 72px; }
+    .read-btn { margin-top: 16px; display: inline-flex; }
+    .petal {
+      position: fixed;
+      width: 10px; height: 18px;
+      background: linear-gradient(180deg, rgba(250,219,118,.8), rgba(255,255,255,.1));
+      border-radius: 50% 50% 60% 60%;
+      opacity: .7;
+      animation: fall 8s linear forwards;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-20vh) rotate(0deg); opacity: 0; }
+      10% { opacity: .8; }
+      100% { transform: translateY(110vh) rotate(120deg); opacity: 0; }
+    }
+    @media (max-width: 620px) { .hero { padding-top: 32px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">🪔 GANPATI BAPPA</div>
+      <div class="nav"><a href="admin.html" class="alt">Admin</a></div>
+    </div>
+
+    <section class="hero">
+      <div class="om">ॐ</div>
+      <div class="eyebrow">॥ श्री गणेशाय नमः ॥</div>
+      <div class="hero-copy">
+        <h1>Welcome to Our Ganpati House</h1>
+        <p>Take a moment to discover the wisdom of the Bhagavad Gita. Scan a shloka, listen to its meaning, and carry its message with you.</p>
+      </div>
+      <div style="margin-top:25px">
+        <a class="btn" href="#shloka-list">Begin the Experience</a>
+      </div>
+    </section>
+
+    <section id="message" class="panel" style="text-align:center; margin-bottom:18px;">
+      <h2>🌺 10 Shlokas • 10 Life Moments</h2>
+      <p class="muted">Each QR opens a single shloka. Read the Sanskrit, switch between English, Marathi and Hindi, and listen to the message in your own language.</p>
+    </section>
+
+    <section id="shloka-list" class="shloka-grid"></section>
+
+    <footer>🐘 गणपती बाप्पा मोरया!<br><small>Scan • Read • Listen • Reflect</small></footer>
+  </div>
+
+  <script>
+    function esc(value) {
+      return String(value || '').replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[m]));
+    }
+
+    async function loadShlokas() {
+      let items = [];
+      if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
+        try {
+          const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+          const { data, error } = await sb.from('shlokas').select('*').order('id', { ascending: true });
+          if (!error && data && data.length) {
+            items = data;
+          }
+        } catch (err) {
+          console.warn('Supabase unavailable, using fallback dataset.', err);
+        }
+      }
+
+      if (!items.length) {
+        items = window.getFallbackShlokas ? window.getFallbackShlokas() : [];
+      }
+
+      const container = document.getElementById('shloka-list');
+      container.innerHTML = '';
+
+      items.forEach((item) => {
+        const card = document.createElement('article');
+        card.className = 'shloka-card';
+        card.innerHTML = `
+          <div class="shloka-chip">${esc(item.category)}</div>
+          <h3>${esc(item.title)}</h3>
+          <div class="shloka-sanskrit">${esc(item.sanskrit)}</div>
+          <div class="ref">— गीता ${esc(item.id || 1)}. ${esc(item.id || 1)}</div>
+          <p class="preview">${esc(item.meaning || item.english || '')}</p>
+          <a class="btn read-btn" href="shloka.html?id=${encodeURIComponent(item.id)}">Read & Listen →</a>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    loadShlokas();
+
+    setInterval(() => {
+      const petal = document.createElement('div');
+      petal.className = 'petal';
+      petal.style.left = Math.random() * 100 + 'vw';
+      document.body.appendChild(petal);
+      setTimeout(() => petal.remove(), 8000);
+    }, 650);
+  </script>
+</body>
+</html>
