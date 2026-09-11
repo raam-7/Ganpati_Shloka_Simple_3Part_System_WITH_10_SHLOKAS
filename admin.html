@@ -21,6 +21,7 @@
     .status { margin-top: 10px; font-size: .95rem; }
     .status.success { color: #b9ffb6; }
     .status.error { color: #ffb3b3; }
+    #logoutBtn { display: none; }
     @media (max-width: 700px) { .top { flex-direction: column; align-items: flex-start; } }
   </style>
 </head>
@@ -31,13 +32,14 @@
       <div class="nav">
         <a href="index.html" class="alt">Devotee Page</a>
         <a href="print.html" class="alt">Print Center</a>
+        <button id="logoutBtn" class="btn alt" type="button">Logout</button>
       </div>
     </div>
 
     <div class="grid">
       <section class="panel">
         <div class="stat" id="total">0</div>
-        <div class="muted">Total Shlokas</div>
+        <div class="muted" id="adminUserLabel">Total Shlokas</div>
       </section>
 
       <section class="panel">
@@ -80,7 +82,7 @@
 
     <section class="panel" style="margin-top:18px;">
       <h2>All Shlokas & QR Codes</h2>
-      <p class="muted">Each QR opens that exact shloka. Download the QR or use the print center for physical cards.</p>
+      <p class="muted">Each QR opens that exact shloka. Download the QR or open the print center for complete card templates.</p>
       <div class="tablewrap">
         <table class="table">
           <thead>
@@ -103,6 +105,7 @@
   <script>
     const hasSupabase = window.isSupabaseConfigured && window.isSupabaseConfigured();
     const base = location.origin + location.pathname.replace(/admin\.html$/, '');
+    const sb = hasSupabase ? supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY) : null;
     let data = [];
 
     function esc(value) {
@@ -126,10 +129,39 @@
       el.className = 'status ' + (isError ? 'error' : 'success');
     }
 
+    async function requireAdminSession() {
+      if (!hasSupabase || !sb) {
+        showStatus('Supabase is not configured yet. Add your project URL and anon key in config.js.', true);
+        return null;
+      }
+
+      const { data: { session }, error } = await sb.auth.getSession();
+      if (error) {
+        showStatus(error.message || 'Unable to verify admin session.', true);
+        return null;
+      }
+
+      if (!session) {
+        window.location.href = 'admin-login.html';
+        return null;
+      }
+
+      const userLabel = document.getElementById('adminUserLabel');
+      if (userLabel) {
+        userLabel.textContent = 'Signed in as ' + (session.user?.email || 'admin');
+      }
+
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.style.display = 'inline-flex';
+      }
+
+      return session;
+    }
+
     async function getShlokas() {
       if (!hasSupabase) return window.getFallbackShlokas();
       try {
-        const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
         const { data: rows, error } = await sb.from('shlokas').select('*').order('id', { ascending: true });
         if (error) throw error;
         return rows && rows.length ? rows : window.getFallbackShlokas();
@@ -156,7 +188,8 @@
           <td><div id="${qrId}" class="qr"></div></td>
           <td>
             <div class="action-row">
-              <button class="btn" type="button" onclick="downloadQR(${item.id})">Download QR</button>
+              <button class="btn" type="button" onclick="window.open('print.html', '_blank')">Print Center</button>
+              <button class="btn alt" type="button" onclick="downloadQR(${item.id})">Download QR</button>
               <a class="btn alt" target="_blank" rel="noopener" href="${urlFor(item.id)}">Open</a>
               <button class="btn danger" type="button" onclick="del(${item.id})">Delete</button>
             </div>
@@ -178,6 +211,8 @@
     }
 
     async function load() {
+      const session = await requireAdminSession();
+      if (!session) return;
       data = await getShlokas();
       document.getElementById('total').textContent = String(data.length || 0);
       renderRows(data);
@@ -187,6 +222,9 @@
       event.preventDefault();
       const formData = new FormData(event.target);
       const payload = Object.fromEntries(formData.entries());
+
+      const session = await requireAdminSession();
+      if (!session) return;
 
       if (!hasSupabase) {
         const nextId = Number((window.getFallbackShlokas().at(-1)?.id || 0)) + 1;
@@ -198,7 +236,6 @@
       }
 
       try {
-        const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
         const { error } = await sb.from('shlokas').insert(payload);
         if (error) throw error;
         event.target.reset();
@@ -211,6 +248,8 @@
 
     async function del(id) {
       if (!confirm('Delete this shloka?')) return;
+      const session = await requireAdminSession();
+      if (!session) return;
 
       if (!hasSupabase) {
         window.GANPATI_SHLOKAS = (window.GANPATI_SHLOKAS || []).filter(item => Number(item.id) !== Number(id));
@@ -219,7 +258,6 @@
       }
 
       try {
-        const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
         const { error } = await sb.from('shlokas').delete().eq('id', id);
         if (error) throw error;
         load();
@@ -241,6 +279,13 @@
       a.click();
     }
 
+    async function logout() {
+      if (!sb) return;
+      await sb.auth.signOut();
+      window.location.href = 'admin-login.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
     window.downloadQR = downloadQR;
     window.del = del;
     load();

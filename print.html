@@ -8,28 +8,68 @@
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
-    .printgrid { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: 18px; }
+    .toolrow { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .printgrid { display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 18px; }
     .printcard {
-      background: #fff8e9;
-      color: #3a150e;
-      border: 2px solid #a96d20;
-      border-radius: 18px;
-      padding: 22px 18px;
+      position: relative;
+      width: 100%;
+      max-width: 410px;
+      min-height: 560px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #fffaf1 0%, #f8eed6 100%);
+      border: 3px solid #bd8f2b;
+      border-radius: 22px;
+      box-shadow: inset 0 0 0 3px rgba(123, 41, 24, 0.18), 0 16px 40px rgba(50, 16, 10, 0.12);
+      color: #43150d;
       text-align: center;
-      min-height: 370px;
-      box-shadow: 0 12px 30px rgba(0,0,0,.12);
+      padding: 22px 18px 18px;
+      overflow: hidden;
+      break-inside: avoid;
     }
-    .printcard h2 { color: #7b2918; margin: 12px 0; }
-    .printcard .ps { font-family: Georgia, serif; font-size: 1.12rem; line-height: 1.7; color: #1b0e0d; }
-    .printqr { width: 130px; height: 130px; margin: 14px auto; }
-    .printbtn { margin-bottom: 18px; }
+    .printcard::before,
+    .printcard::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(137, 84, 27, 0.25);
+      border-radius: 16px;
+      pointer-events: none;
+    }
+    .printcard::after {
+      inset: auto 18px 16px 18px;
+      height: 28px;
+      border: none;
+      background: linear-gradient(90deg, transparent 0, rgba(135, 80, 24, 0.26), transparent 100%);
+      border-radius: 50%;
+    }
+    .print-top { position: relative; z-index: 1; }
+    .print-om { display: inline-block; width: 52px; height: 52px; border: 2px solid #c68d2f; border-radius: 50%; display: grid; place-items: center; font-size: 1.8rem; color: #8f4a1c; background: rgba(255,255,255,0.4); }
+    .print-header { margin-top: 10px; font-size: 1.06rem; font-weight: 900; letter-spacing: 0.06em; color: #7b2918; }
+    .print-kicker { margin-top: 16px; font-size: 0.78rem; letter-spacing: 0.28em; text-transform: uppercase; color: #8f4a1c; font-weight: 800; }
+    .print-title { margin: 10px 0 6px; font-size: clamp(1.4rem, 2vw, 1.8rem); font-weight: 900; color: #7b2918; }
+    .print-shloka { margin-top: 18px; font-size: clamp(1.2rem, 2vw, 1.56rem); line-height: 1.8; font-family: Georgia, 'Times New Roman', serif; color: #2d130d; font-weight: 700; }
+    .print-ref { margin-top: 14px; font-size: 1rem; font-weight: 700; color: #6d311b; }
+    .print-qr-wrap { position: relative; z-index: 1; margin: 18px auto 8px; width: 170px; height: 170px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,0.9); border: 2px solid rgba(123,41,24,0.18); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.8); }
+    .print-qr { width: 100%; height: 100%; background: white; border-radius: 10px; display: grid; place-items: center; }
+    .print-scan { margin-top: 6px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 800; color: #7b2918; }
+    .print-langs { margin-top: 10px; font-size: 0.82rem; font-weight: 800; color: #6c3b1f; letter-spacing: 0.08em; }
+    .print-footer { margin-top: 18px; font-size: 1.02rem; font-weight: 900; letter-spacing: 0.08em; color: #8c4f1d; }
+    .card-actions { position: relative; z-index: 1; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .card-actions .btn { padding: 8px 12px; font-size: 0.8rem; }
     @media print {
       body { background: white; color: #111; }
-      .top, .printbtn, .muted.no-print { display: none !important; }
+      .top, .toolrow, .muted.no-print { display: none !important; }
       .wrap { width: 100%; }
-      .printgrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .printcard { break-inside: avoid; box-shadow: none; }
+      .printgrid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        width: 100%;
+      }
+      .printcard { max-width: none; box-shadow: none; break-inside: avoid; }
+      .card-actions { display: none !important; }
     }
   </style>
 </head>
@@ -40,13 +80,16 @@
       <div class="nav"><a href="admin.html" class="alt">Admin</a></div>
     </div>
 
-    <button class="btn printbtn" onclick="window.print()">🖨️ Print All</button>
-    <p class="muted no-print">All saved shlokas are shown below. Print this page on A4, cut the cards, and place each card near the Ganpati decoration.</p>
+    <div class="toolrow no-print">
+      <button class="btn" onclick="window.print()">🖨️ Print All</button>
+      <a href="admin.html" class="btn alt">Back to Admin</a>
+    </div>
+    <p class="muted no-print">All saved shlokas are shown below as full devotional cards ready for A4 printing and QR scanning.</p>
     <div id="grid" class="printgrid"></div>
   </div>
 
   <script>
-    const base = location.origin + location.pathname.replace(/print\.html$/, '');
+    const base = window.location.origin + '/';
 
     function esc(value) {
       return String(value || '').replace(/[&<>"']/g, (m) => ({
@@ -56,6 +99,10 @@
         '"': '&quot;',
         "'": '&#039;'
       }[m]));
+    }
+
+    function getShlokaUrl(item) {
+      return window.location.origin + '/shloka.html?id=' + encodeURIComponent(item.id);
     }
 
     async function loadPrintCards() {
@@ -78,30 +125,77 @@
 
       grid.innerHTML = '';
       items.forEach((item) => {
-        const card = document.createElement('div');
+        const card = document.createElement('article');
         card.className = 'printcard';
-        const qrId = 'q' + item.id;
+        card.setAttribute('data-card-id', String(item.id));
+        const qrId = 'q-' + item.id;
         card.innerHTML = `
-          <div>॥ श्री गणेशाय नमः ॥</div>
-          <div class="muted">${esc(item.category)}</div>
-          <h2>${esc(item.title)}</h2>
-          <div class="ps">${esc(item.sanskrit)}</div>
-          <div id="${qrId}" class="printqr"></div>
-          <b>Scan to learn more</b>
-          <div style="margin-top:10px;font-size:.8rem;">Ganpati Bappa Morya</div>
+          <div class="print-top">
+            <div class="print-om">ॐ</div>
+            <div class="print-header">॥ श्री गणेशाय नमः ॥</div>
+          </div>
+          <div class="print-kicker">${esc(item.category || 'Ganpati')}</div>
+          <div class="print-title">${esc(item.title || 'Ganpati Blessings')}</div>
+          <div class="print-shloka">${esc(item.sanskrit || '')}</div>
+          <div class="print-ref">— ${esc(item.title || 'Ganpati Shloka')}</div>
+          <div class="print-qr-wrap">
+            <div id="${qrId}" class="print-qr"></div>
+          </div>
+          <div class="print-scan">Scan to learn more</div>
+          <div class="print-langs">English • मराठी • हिन्दी</div>
+          <div class="print-footer">गणपती बाप्पा मोरया!</div>
+          <div class="card-actions no-print">
+            <button class="btn alt" type="button" onclick="printSingleCard(${item.id})">🖨️ Print</button>
+            <button class="btn alt" type="button" onclick="downloadCard(${item.id})">⬇️ Download Card</button>
+          </div>
         `;
         grid.appendChild(card);
 
         new QRCode(document.getElementById(qrId), {
-          text: base + 'shloka.html?id=' + encodeURIComponent(item.id),
-          width: 125,
-          height: 125,
+          text: getShlokaUrl(item),
+          width: 150,
+          height: 150,
           colorDark: '#111',
           colorLight: '#fff'
         });
       });
     }
 
+    function printSingleCard(id) {
+      const card = document.querySelector('[data-card-id="' + id + '"]');
+      if (!card) return;
+      const original = card.style.width;
+      card.style.width = '100%';
+      card.style.maxWidth = '100%';
+      setTimeout(() => {
+        window.print();
+        card.style.width = original;
+      }, 100);
+    }
+
+    function downloadCard(id) {
+      const card = document.querySelector('[data-card-id="' + id + '"]');
+      if (!card || !window.html2canvas) {
+        alert('Card render library is not ready yet.');
+        return;
+      }
+
+      html2canvas(card, {
+        scale: 2,
+        backgroundColor: '#fffaf1',
+        useCORS: true,
+        width: 1200,
+        height: 1600
+      }).then((canvas) => {
+        const link = document.createElement('a');
+        link.download = 'ganpati-shloka-' + id + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+
+    window.downloadCard = downloadCard;
+    window.printSingleCard = printSingleCard;
     loadPrintCards();
   </script>
 </body>

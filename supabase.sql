@@ -17,14 +17,14 @@ alter table public.shlokas enable row level security;
 create policy "public can read shlokas"
 on public.shlokas for select to anon, authenticated using (true);
 
-create policy "public demo can insert"
-on public.shlokas for insert to anon, authenticated with check (true);
+create policy "admin can insert shlokas"
+on public.shlokas for insert to authenticated with check (true);
 
-create policy "public demo can update"
-on public.shlokas for update to anon, authenticated using (true) with check (true);
+create policy "admin can update shlokas"
+on public.shlokas for update to authenticated using (true) with check (true);
 
-create policy "public demo can delete"
-on public.shlokas for delete to anon, authenticated using (true);
+create policy "admin can delete shlokas"
+on public.shlokas for delete to authenticated using (true);
 
 insert into public.shlokas (
   id, category, title, sanskrit, transliteration, english, marathi, hindi, meaning, message
