@@ -1,5 +1,5 @@
-window.SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL_HERE";
-window.SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+window.SUPABASE_URL = "https://citlhjwdiafmeocfjhgr.supabase.co";
+window.SUPABASE_ANON_KEY = "sb_publishable_FGV88JZjom8VPd-xeV_hmA_znH6YjKW";
 
 window.GANPATI_SHLOKAS = [
   {
