@@ -4,8 +4,8 @@ This project is a static HTML/CSS/JavaScript app and is already suitable for Ver
 
 ## Project structure
 
-- index.html — public homepage with all 10 shlokas
-- admin.html — admin dashboard for add / view / delete / QR / print
+- index.html — public homepage with the six life-situation shlokas
+- admin.html — authenticated admin dashboard for add / edit / view / delete / QR / print
 - shloka.html — exact shloka detail page for a QR scan
 - print.html — printable shloka cards
 - styles.css — visual styling
@@ -20,12 +20,12 @@ This project is a static HTML/CSS/JavaScript app and is already suitable for Ver
 - View total count
 - Download QR code PNG
 - Open exact shloka
-- Delete shloka
+- Edit and delete shlokas
 - Use Print Center
 
 ### 2. Public homepage — /
 - Shows the welcome message
-- Shows the 10 shlokas visibly
+- Shows the six shlokas visibly
 - Each shloka card includes title, category, Sanskrit, preview and Read & Listen button
 
 ### 3. Individual shloka page — /shloka.html?id=...
@@ -79,19 +79,15 @@ IMPORTANT:
 
 ## Required database data
 
-The SQL file includes the first 10 shlokas:
-1. For Mother
-2. For Father
-3. For Students
-4. For Professionals
-5. For Couples
-6. For Youth
-7. For People in Struggle
-8. For Everyone
-9. Control Anger
-10. Success & Failure
+The SQL file includes six life-situation shlokas:
+1. Stress → Patience
+2. Anger → Self-Control
+3. Fear → Courage (Chapter 2, Verse 3)
+4. Comparison → Self-Belief
+5. Failure → Learning
+6. Distraction → Focus
 
-The SQL file uses INSERT ... ON CONFLICT DO NOTHING logic so it does not duplicate records when re-run.
+The SQL file uses an idempotent seed/update flow so it does not duplicate records and refreshes the six canonical records when re-run.
 
 ## Vercel deployment
 
@@ -164,7 +160,7 @@ Then open:
 ## Recommended deployment checklist
 
 Before going live, confirm:
-- homepage shows all 10 shlokas
+- homepage shows all six shlokas
 - admin page works
 - QR code links use the deployed domain
 - shloka page loads the exact shloka by ID
@@ -195,9 +191,9 @@ git push -u origin main
 After deployment, test these pages:
 
 1. Homepage
-   - confirm it shows the welcome message and all 10 shlokas
+   - confirm it shows the welcome message and all six shlokas
 2. Admin page
-   - confirm total count is 10
+   - confirm total count is six
    - add a shloka
    - delete a shloka
 3. QR generation

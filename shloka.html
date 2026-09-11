@@ -5,41 +5,49 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Ganpati Shloka</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="backdrop.css">
   <script src="config.js"></script>
+  <script src="speech.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { background: radial-gradient(circle at 50% 0%, #7b2918 0%, #35120d 42%, #170907 100%); }
+    body { background: var(--page); }
     .page-shell { max-width: 900px; margin: 0 auto; }
     .shloka-card {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(242,196,92,.28);
+      background: var(--white);
+      border: 1px solid var(--gold-soft);
       border-radius: 30px;
       padding: 30px 22px;
-      box-shadow: 0 25px 80px rgba(0,0,0,.25);
+      box-shadow: var(--shadow);
       margin-top: 14px;
     }
-    .ref { font-size: 1.05rem; color: #d9bd90; font-weight: 800; margin: 8px 0 16px; }
-    .sanskrit { font-size: clamp(1.7rem, 4vw, 2.4rem); line-height: 1.7; color: #ffe7ad; font-family: Georgia, serif; margin: 20px 0; }
+    .ref { font-size: 1.05rem; color: var(--peacock); font-weight: 800; margin: 8px 0 16px; }
+    .sanskrit { font-size: clamp(1.7rem, 4vw, 2.4rem); line-height: 1.7; color: white; font-family: 'Noto Sans Devanagari', Georgia, serif; margin: 20px 0; }
     .tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 20px; }
-    .tab { background: rgba(255,255,255,.04); border: 1px solid rgba(242,196,92,.3); color: #f7e3b1; border-radius: 999px; padding: 9px 14px; font-weight: 800; cursor: pointer; }
-    .tab.active { background: linear-gradient(135deg, #c38b26, #f5d789); color: #310f0b; border-color: transparent; }
-    .translation { font-size: 1.1rem; line-height: 1.8; color: #f5e2bd; margin: 18px 0; }
-    .info-box { background: rgba(255,255,255,.04); border: 1px solid rgba(242,196,92,.2); border-radius: 18px; padding: 16px 18px; margin-top: 18px; }
-    .voice-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 20px; }
+    .tab { background: var(--white); border: 1px solid var(--line); color: var(--royal); border-radius: 999px; padding: 9px 14px; font-weight: 800; cursor: pointer; }
+    .tab.active { background: var(--blue); color: var(--white); border-color: transparent; }
+    .translation { font-size: 1.1rem; line-height: 1.8; color: var(--text); margin: 18px 0; }
+    .info-box { background: rgba(3,10,25,.87)!important; border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; margin-top: 18px; }
+    .voice-section { margin-top: 22px; padding: 18px; border: 1px solid rgba(212,175,55,.38); border-radius: 18px; background: rgba(7,26,56,.55); }
+    .voice-section h3 { margin: 0 0 12px; color: var(--warm); text-align: center; }
+    .voice-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 12px; }
     .voice-row .btn { min-width: 190px; }
-    .muted-note { font-size: .83rem; color: #dfc694; }
-    @media (max-width: 620px) { .voice-row .btn { width: 100%; } }
+    .voice-row .btn.is-playing { background: var(--warm); color: #071a38; border-color: var(--warm); }
+    .voice-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 12px; }
+    .muted-note { font-size: .83rem; color: var(--text); }
+    @media (max-width: 620px) { .voice-row .btn, .voice-actions .btn { width: 100%; } }
   </style>
 </head>
 <body>
+  <div class="animated-backdrop" aria-hidden="true">
+    <span class="backdrop-feather feather-one"></span><span class="backdrop-feather feather-two"></span><span class="backdrop-feather feather-three"></span><span class="backdrop-feather feather-four"></span>
+    <span class="backdrop-mandala"></span><span class="backdrop-diya diya-one"></span><span class="backdrop-diya diya-two"></span>
+    <span class="backdrop-particle particle-one"></span><span class="backdrop-particle particle-two"></span><span class="backdrop-particle particle-three"></span><span class="backdrop-particle particle-four"></span>
+  </div>
   <div class="wrap page-shell">
-    <div class="top">
-      <div class="brand">🪔 GANPATI HOUSE</div>
-      <div class="nav">
-        <a href="index.html" class="alt">Home</a>
-        <a href="shlokas.html" class="alt">Explore Shlokas</a>
-      </div>
-    </div>
+    <nav class="corner-nav" aria-label="Primary navigation">
+      <a href="index.html">⌂ Home</a>
+      <a href="admin-login.html">▣ Admin</a>
+    </nav>
 
     <section class="hero" style="padding:45px 0 20px;">
       <div class="om">ॐ</div>
@@ -50,7 +58,11 @@
 
     <main class="shloka-card" id="app"><div class="muted">Loading your shloka…</div></main>
 
-    <footer>🐘 गणपती बाप्पा मोरया!<br><small>May wisdom, peace and happiness guide your day.</small></footer>
+    <footer class="site-footer">
+      <img src="/assets/ganpati-logo.png" alt="Ganpati Bappa" class="ganpati-footer-logo">
+      <div class="ganpati-footer-text">गणपती बाप्पा मोरया!</div>
+      <small>Scan • Read • Listen • Reflect</small>
+    </footer>
   </div>
 
   <script>
@@ -105,23 +117,31 @@
 
     function renderTranslation(lang) {
       const app = document.getElementById('app');
-      const labels = { english: 'English', marathi: 'मराठी', hindi: 'हिन्दी' };
-      const translation = { english: current.english, marathi: current.marathi, hindi: current.hindi }[lang] || current.english;
 
       app.innerHTML = `
         <div class="eyebrow">${esc(current.problem || 'Life Situation')} → ${esc(current.solution || 'Wisdom')}</div>
         <h2>${esc(current.title || current.problem)}</h2>
         <div class="ref">Bhagavad Gita • Chapter ${esc(current.chapter || '')} • Verse ${esc(current.verse || '')}</div>
-        <div class="sanskrit">${esc(current.sanskrit)}</div>
-        <p class="muted">${esc(current.transliteration || '')}</p>
+        <section class="info-box">
+          <strong>Sanskrit Shloka</strong>
+          <div class="sanskrit">${esc(current.sanskrit)}</div>
+          <p class="muted"><strong>Transliteration</strong><br>${esc(current.transliteration || '')}</p>
+        </section>
 
-        <div class="tabs">
-          ${Object.entries(labels).map(([key, label]) => `
-            <button class="tab ${key === lang ? 'active' : ''}" type="button" onclick="renderTranslation('${key}')">${label}</button>
-          `).join('')}
-        </div>
+        <section class="info-box">
+          <strong>English Translation</strong>
+          <p class="translation">${esc(current.english)}</p>
+        </section>
 
-        <div class="translation">${esc(translation)}</div>
+        <section class="info-box">
+          <strong>Marathi Translation</strong>
+          <p class="translation">${esc(current.marathi)}</p>
+        </section>
+
+        <section class="info-box">
+          <strong>Hindi Translation</strong>
+          <p class="translation">${esc(current.hindi)}</p>
+        </section>
 
         <div class="info-box">
           <strong>📖 Simple Meaning</strong>
@@ -133,38 +153,72 @@
           <p class="muted">${esc(current.message || 'Carry this lesson with humility and let it guide your response in daily life.')}</p>
         </div>
 
-        <div class="voice-row">
-          <button class="btn" type="button" onclick="speakInLanguage('english')">🔊 English</button>
-          <button class="btn alt" type="button" onclick="speakInLanguage('marathi')">🔊 मराठी</button>
-          <button class="btn alt" type="button" onclick="speakInLanguage('hindi')">🔊 हिन्दी</button>
-          <button class="btn alt" type="button" onclick="stopVoice()">⏹ Stop</button>
+        <section class="voice-section" aria-label="Voice controls">
+          <h3>🔊 Listen to Shloka</h3>
+          <div class="voice-row">
+            <button class="btn" data-speech-language="sanskrit" type="button" onclick="speakInLanguage('sanskrit')">▶ Sanskrit</button>
+          </div>
+          <p id="voice-note" class="muted-note" style="margin:12px 0 0; text-align:center;">Voice availability and pronunciation may vary by device and browser.</p>
+          <h3 style="margin-top:18px;">🔊 Listen to Translation</h3>
+          <div class="voice-row">
+            <button class="btn alt" data-speech-language="english" type="button" onclick="speakInLanguage('english')">🇬🇧 English</button>
+            <button class="btn alt" data-speech-language="hindi" type="button" onclick="speakInLanguage('hindi')">🇮🇳 हिंदी</button>
+            <button class="btn alt" data-speech-language="marathi" type="button" onclick="speakInLanguage('marathi')">🇮🇳 मराठी</button>
+          </div>
+          <div class="voice-actions">
+            <button class="btn alt" type="button" onclick="pauseVoice()">⏸ Pause</button>
+            <button class="btn alt" type="button" onclick="resumeVoice()">▶ Resume</button>
+            <button class="btn alt" type="button" onclick="stopVoice()">⏹ Stop</button>
+          </div>
         </div>
-        <p class="muted-note" style="margin-top:16px; text-align:center;">Voice uses the browser’s built-in speech engine.</p>
       `;
+      updateSpeechButtons('idle');
     }
 
     function speakInLanguage(lang) {
-      if (!('speechSynthesis' in window)) {
+      if (!window.GanpatiSpeech) {
         alert('Speech synthesis is not supported in this browser.');
         return;
       }
-      const text = { english: current.english, marathi: current.marathi, hindi: current.hindi }[lang] || current.english;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === 'english' ? 'en-IN' : lang === 'marathi' ? 'mr-IN' : 'hi-IN';
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
+      const text = { sanskrit: current.sanskrit, english: current.english, marathi: current.marathi, hindi: current.hindi }[lang];
+      try {
+        const note = document.getElementById('voice-note');
+        if (note && lang === 'sanskrit' && !window.GanpatiSpeech.isSanskritVoiceAvailable()) {
+          note.textContent = 'A Sanskrit voice is unavailable on this device; the closest available Indic voice will be used. Pronunciation may vary.';
+        }
+        window.GanpatiSpeech.speak(text, lang);
+      } catch (error) {
+        alert(error.message || 'Speech synthesis is not available.');
+      }
     }
 
     function stopVoice() {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      if (window.GanpatiSpeech) window.GanpatiSpeech.stop();
+    }
+
+    function pauseVoice() {
+      if (window.GanpatiSpeech) window.GanpatiSpeech.pause();
+    }
+
+    function resumeVoice() {
+      if (window.GanpatiSpeech) window.GanpatiSpeech.resume();
+    }
+
+    function updateSpeechButtons(state, language) {
+      document.querySelectorAll('[data-speech-language]').forEach((button) => {
+        const buttonLanguage = button.dataset.speechLanguage;
+        const isActive = state !== 'idle' && buttonLanguage === language;
+        button.classList.toggle('is-playing', isActive);
+        button.textContent = isActive ? (state === 'paused' ? '⏸ Paused' : '🔊 Playing...') : buttonLanguage === 'sanskrit' ? '▶ Sanskrit' : buttonLanguage === 'english' ? '🇬🇧 English' : buttonLanguage === 'hindi' ? '🇮🇳 हिंदी' : '🇮🇳 मराठी';
+      });
     }
 
     window.renderTranslation = renderTranslation;
     window.speakInLanguage = speakInLanguage;
     window.stopVoice = stopVoice;
+    window.pauseVoice = pauseVoice;
+    window.resumeVoice = resumeVoice;
+    if (window.GanpatiSpeech) window.GanpatiSpeech.onStateChange(updateSpeechButtons);
     loadShloka();
   </script>
 </body>

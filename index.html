@@ -5,14 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Ganpati House | Bhagavad Gita Wisdom</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="backdrop.css">
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
-    body { background: radial-gradient(circle at 50% 0%, #7b2918 0%, #35120d 42%, #170907 100%); }
+    body { background: var(--page); }
     .hero { padding-bottom: 16px; }
     .hero-copy { max-width: 760px; margin: 0 auto; }
-    .motto { font-size: 1.02rem; line-height: 1.8; color: #f1d8a4; max-width: 720px; margin: 18px auto 0; }
+    .motto { font-size: 1.02rem; line-height: 1.8; color: var(--text); max-width: 720px; margin: 18px auto 0; }
     .nav a { display: inline-flex; align-items: center; }
     .shloka-grid {
       display: grid;
@@ -21,11 +22,11 @@
       margin-top: 26px;
     }
     .shloka-card {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(242,196,92,.28);
+      background: var(--white);
+      border: 1px solid var(--gold-soft);
       border-radius: 24px;
       padding: 22px 20px 18px;
-      box-shadow: 0 18px 55px rgba(0,0,0,.18);
+      box-shadow: var(--shadow);
       text-align: left;
       position: relative;
       overflow: hidden;
@@ -40,9 +41,9 @@
     }
     .shloka-chip {
       display: inline-block;
-      background: rgba(245,213,156,.1);
-      border: 1px solid rgba(245,213,156,.25);
-      color: #f5d59c;
+      background: var(--pale);
+      border: 1px solid var(--line);
+      color: var(--peacock);
       border-radius: 999px;
       padding: 7px 10px;
       font-size: .7rem;
@@ -51,9 +52,9 @@
       font-weight: 800;
       margin-bottom: 10px;
     }
-    .card-pair { font-size: 1.8rem; font-weight: 900; color: #ffe7ad; margin: 10px 0 2px; }
-    .ref { color: #d7ba82; font-weight: 700; margin: 10px 0 12px; }
-    .preview { color: #f0ddbb; line-height: 1.7; min-height: 75px; }
+    .card-pair { font-size: 1.8rem; font-weight: 900; color: var(--royal); margin: 10px 0 2px; }
+    .ref { color: var(--peacock); font-weight: 700; margin: 10px 0 12px; }
+    .preview { color: var(--text); line-height: 1.7; min-height: 75px; }
     .read-btn { margin-top: 16px; display: inline-flex; }
     .qr-panel {
       margin-top: 28px;
@@ -91,24 +92,29 @@
   </style>
 </head>
 <body>
+  <div class="animated-backdrop" aria-hidden="true">
+    <span class="backdrop-feather feather-one"></span><span class="backdrop-feather feather-two"></span><span class="backdrop-feather feather-three"></span><span class="backdrop-feather feather-four"></span>
+    <span class="backdrop-mandala"></span><span class="backdrop-diya diya-one"></span><span class="backdrop-diya diya-two"></span>
+    <span class="backdrop-particle particle-one"></span><span class="backdrop-particle particle-two"></span><span class="backdrop-particle particle-three"></span><span class="backdrop-particle particle-four"></span>
+    <span class="backdrop-petal petal-one"></span><span class="backdrop-petal petal-two"></span><span class="backdrop-petal petal-three"></span><span class="backdrop-petal petal-four"></span><span class="backdrop-petal petal-five"></span><span class="backdrop-petal petal-six"></span>
+  </div>
   <div class="wrap">
-    <div class="top">
-      <div class="brand">🪔 GANPATI HOUSE</div>
-      <div class="nav">
-        <a href="index.html" class="alt">Home</a>
-        <a href="shlokas.html" class="alt">Explore Shlokas</a>
-      </div>
-    </div>
+    <nav class="corner-nav" aria-label="Primary navigation">
+      <a href="index.html">⌂ Home</a>
+      <a href="admin-login.html">▣ Admin</a>
+    </nav>
 
     <section class="hero">
       <div class="om">ॐ</div>
       <div class="eyebrow">॥ श्री गणेशाय नमः ॥</div>
       <div class="hero-copy">
-        <h1>Welcome to Our Ganpati House</h1>
-        <p class="motto">Sometimes life gives us stress, anger, fear, comparison, failure and distraction. The Bhagavad Gita offers timeless wisdom to help us face them with a calmer mind.</p>
+        <h1>GEETA UPDESH</h1>
+        <h2 style="margin:0 0 14px; font-size:clamp(1.35rem,3vw,2rem); letter-spacing:.12em;">WISDOM FOR TODAY'S LIFE</h2>
+        <p class="motto">Welcome to Our Ganpati House. Pause for a moment, explore the timeless wisdom of the Bhagavad Gita and discover a teaching for your life's journey.</p>
       </div>
       <div style="margin-top:25px">
-        <a class="btn" href="shlokas.html">Find Wisdom for Your Moment</a>
+        <a class="btn" href="shlokas.html">Explore Shlokas</a>
+        <a class="btn alt" href="#shloka-list">✨ Discover Wisdom</a>
       </div>
     </section>
 
@@ -124,14 +130,18 @@
         <div class="eyebrow" style="margin-top:0; letter-spacing:.18em;">📱 TAKE THE WISDOM WITH YOU</div>
         <h2 style="margin:8px 0 10px;">Scan the master QR</h2>
         <p class="muted">Scan the QR code to explore six timeless teachings from the Bhagavad Gita. Read the verse, understand the meaning and listen in English, Marathi or Hindi.</p>
-        <p style="margin-top:12px; font-weight:800; color:#f5d59c;">Scan • Read • Listen • Reflect</p>
+        <p style="margin-top:12px; font-weight:800; color:var(--peacock);">Scan • Read • Listen • Reflect</p>
       </div>
       <div class="qr-box">
         <div id="master-qr"></div>
       </div>
     </section>
 
-    <footer>🐘 गणपती बाप्पा मोरया!<br><small>Scan • Read • Listen • Reflect</small></footer>
+    <footer class="site-footer">
+      <img src="/assets/stylized-ganesha-illustration-in-orange-and-yellow-vector.jpg" alt="Ganpati Bappa" class="ganpati-footer-logo">
+      <div class="ganpati-footer-text">गणपती बाप्पा मोरया!</div>
+      <small>Scan • Read • Listen • Reflect</small>
+    </footer>
   </div>
 
   <script>
@@ -163,7 +173,7 @@
 
       items.forEach((item) => {
         const card = document.createElement('article');
-        card.className = 'shloka-card';
+        card.className = 'shloka-card reveal';
         card.innerHTML = `
           <div class="shloka-chip">${esc(item.problem || 'Life Situation')}</div>
           <div class="card-pair">${esc(item.problem || '')} → ${esc(item.solution || '')}</div>
@@ -173,6 +183,10 @@
         `;
         container.appendChild(card);
       });
+      const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+        if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+      }), { threshold: .12 });
+      container.querySelectorAll('.reveal').forEach((element) => observer.observe(element));
     }
 
     function renderMasterQr() {

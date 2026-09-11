@@ -5,21 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Ganpati House | Shloka Collection</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="backdrop.css">
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
-    body { background: radial-gradient(circle at 50% 0%, #7b2918 0%, #35120d 42%, #170907 100%); }
+    body { background: var(--page); }
     .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
     .hero-copy { max-width: 780px; margin: 0 auto; text-align: center; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-top: 24px; }
     .card {
       position: relative;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(242,196,92,.28);
+      background: var(--white);
+      border: 1px solid var(--gold-soft);
       border-radius: 24px;
       padding: 20px 18px 18px;
-      box-shadow: 0 18px 55px rgba(0,0,0,.18);
+      box-shadow: var(--shadow);
       min-height: 260px;
       overflow: hidden;
     }
@@ -30,10 +31,10 @@
       height: 4px;
       background: linear-gradient(90deg, #f7d680, #c68a22, #f2c45c);
     }
-    .chip { display: inline-block; background: rgba(245,213,156,.1); border: 1px solid rgba(245,213,156,.25); color: #f5d59c; border-radius: 999px; padding: 6px 10px; font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; margin-bottom: 12px; }
-    .pair { font-size: 1.8rem; font-weight: 900; color: #ffe7ad; margin: 10px 0 2px; }
-    .ref { color: #d7ba82; font-weight: 700; margin: 8px 0 12px; }
-    .preview { color: #f0ddbb; line-height: 1.7; min-height: 80px; }
+    .chip { display: inline-block; background: var(--pale); border: 1px solid var(--line); color: var(--peacock); border-radius: 999px; padding: 6px 10px; font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; margin-bottom: 12px; }
+    .pair { font-size: 1.8rem; font-weight: 900; color: #d8dde4; margin: 10px 0 2px; }
+    .ref { color: var(--peacock); font-weight: 700; margin: 8px 0 12px; }
+    .preview { color: var(--text); line-height: 1.7; min-height: 80px; }
     .mt { margin-top: 16px; }
     .qr-box {
       width: min(230px, 100%);
@@ -47,14 +48,17 @@
   </style>
 </head>
 <body>
+  <div class="animated-backdrop" aria-hidden="true">
+    <span class="backdrop-feather feather-one"></span><span class="backdrop-feather feather-two"></span><span class="backdrop-feather feather-three"></span><span class="backdrop-feather feather-four"></span>
+    <span class="backdrop-mandala"></span><span class="backdrop-diya diya-one"></span><span class="backdrop-diya diya-two"></span>
+    <span class="backdrop-particle particle-one"></span><span class="backdrop-particle particle-two"></span><span class="backdrop-particle particle-three"></span><span class="backdrop-particle particle-four"></span>
+    <span class="backdrop-petal petal-one"></span><span class="backdrop-petal petal-two"></span><span class="backdrop-petal petal-three"></span><span class="backdrop-petal petal-four"></span><span class="backdrop-petal petal-five"></span><span class="backdrop-petal petal-six"></span>
+  </div>
   <div class="wrap">
-    <div class="top">
-      <div class="brand">🪔 GANPATI HOUSE</div>
-      <div class="nav">
-        <a href="index.html" class="alt">Home</a>
-        <a href="admin-login.html" class="alt">Admin</a>
-      </div>
-    </div>
+    <nav class="corner-nav" aria-label="Primary navigation">
+      <a href="index.html">⌂ Home</a>
+      <a href="admin-login.html">▣ Admin</a>
+    </nav>
 
     <section class="hero">
       <div class="om">ॐ</div>
@@ -78,7 +82,11 @@
       <div class="qr-box"><div id="master-qr"></div></div>
     </section>
 
-    <footer>🐘 गणपती बाप्पा मोरया!<br><small>Scan • Read • Listen • Reflect</small></footer>
+    <footer class="site-footer">
+      <img src="/assets/stylized-ganesha-illustration-in-orange-and-yellow-vector-removebg-preview.png" alt="Ganpati Bappa" class="ganpati-footer-logo">
+      <div class="ganpati-footer-text">गणपती बाप्पा मोरया!</div>
+      <small>Scan • Read • Listen • Reflect</small>
+    </footer>
   </div>
 
   <script>
@@ -110,7 +118,7 @@
 
       items.forEach((item) => {
         const card = document.createElement('article');
-        card.className = 'card';
+        card.className = 'card reveal';
         card.innerHTML = `
           <div class="chip">${esc(item.problem || 'Life Situation')}</div>
           <div class="pair">${esc(item.problem || '')} → ${esc(item.solution || '')}</div>
@@ -120,6 +128,10 @@
         `;
         container.appendChild(card);
       });
+      const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+        if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+      }), { threshold: .12 });
+      container.querySelectorAll('.reveal').forEach((element) => observer.observe(element));
     }
 
     function renderMasterQr() {

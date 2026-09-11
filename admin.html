@@ -5,14 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Admin — Ganpati House</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="backdrop.css">
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
-    body { min-height: 100vh; }
+    body { min-height: 100vh; background: var(--page); }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
-    .panel { background: rgba(255,255,255,0.06); }
+    .panel { background: rgba(255,255,255,.9); }
     .tablewrap { overflow-x: auto; }
     .table { width: 100%; border-collapse: collapse; }
     .table th, .table td { border-bottom: 1px solid rgba(242,196,92,.2); padding: 12px 8px; vertical-align: top; text-align: left; }
@@ -23,22 +24,22 @@
     .status.error { color: #ffb3b3; }
     #logoutBtn { display: none; }
     .master-qr-panel { margin-top: 24px; padding: 20px; }
-    .master-qr-box { width: min(260px, 100%); margin: 0 auto; background: white; border-radius: 20px; padding: 12px; }
+    .master-qr-box { width: min(260px, 100%); margin: 0 auto; background: white; border: 1px solid var(--gold-soft); border-radius: 20px; padding: 12px; }
     .master-qr-box > div { width: 100%; aspect-ratio: 1; }
     @media (max-width: 700px) { .top { flex-direction: column; align-items: flex-start; } }
   </style>
 </head>
 <body>
+  <div class="animated-backdrop" aria-hidden="true">
+    <span class="backdrop-mandala"></span><span class="backdrop-diya diya-one"></span><span class="backdrop-diya diya-two"></span>
+  </div>
   <div class="wrap">
-    <div class="top">
-      <div class="brand">🛕 GANPATI HOUSE ADMIN</div>
-      <div class="nav">
-        <a href="index.html" class="alt">Home</a>
-        <a href="print.html" class="alt">Print Center</a>
-        <a href="shlokas.html" class="alt">Public Collection</a>
-        <button id="logoutBtn" class="btn alt" type="button">Logout</button>
-      </div>
-    </div>
+    <nav class="corner-nav admin-corner-nav" aria-label="Admin navigation">
+      <a href="index.html">⌂ Home</a>
+      <a href="print.html">▣ Print</a>
+      <a href="shlokas.html">▣ Public</a>
+      <button id="logoutBtn" type="button">Logout</button>
+    </nav>
 
     <div class="grid">
       <section class="panel">
@@ -94,7 +95,10 @@
           <label>Life Message
             <textarea name="message" required placeholder="Stress can make us feel ..."></textarea>
           </label>
-          <button class="btn" type="submit">➕ Add Shloka</button>
+          <div class="action-row">
+            <button class="btn" id="submitBtn" type="submit">➕ Add Shloka</button>
+            <button class="btn alt" id="cancelEditBtn" type="button" hidden>Cancel Edit</button>
+          </div>
           <div id="status" class="status"></div>
         </form>
       </section>
@@ -136,6 +140,7 @@
     const hasSupabase = window.isSupabaseConfigured && window.isSupabaseConfigured();
     const sb = hasSupabase ? supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY) : null;
     let data = [];
+    let editingId = null;
 
     function esc(value) {
       return String(value || '').replace(/[&<>"']/g, (m) => ({
@@ -226,6 +231,7 @@
           <td>
             <div class="action-row">
               <a class="btn alt" target="_blank" rel="noopener" href="shloka.html?id=${encodeURIComponent(item.id)}">Open</a>
+              <button class="btn alt" type="button" onclick="editShloka(${item.id})">Edit</button>
               <button class="btn danger" type="button" onclick="del(${item.id})">Delete</button>
             </div>
           </td>
@@ -252,6 +258,27 @@
       return payload;
     }
 
+    function editShloka(id) {
+      const item = data.find((entry) => Number(entry.id) === Number(id));
+      const form = document.getElementById('form');
+      if (!item || !form) return;
+      editingId = Number(id);
+      Object.keys(item).forEach((key) => {
+        const field = form.elements.namedItem(key);
+        if (field) field.value = item[key] ?? '';
+      });
+      document.getElementById('submitBtn').textContent = '💾 Save Changes';
+      document.getElementById('cancelEditBtn').hidden = false;
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      document.getElementById('form').reset();
+      document.getElementById('submitBtn').textContent = '➕ Add Shloka';
+      document.getElementById('cancelEditBtn').hidden = true;
+    }
+
     document.getElementById('form').addEventListener('submit', async function (event) {
       event.preventDefault();
       const payload = normalizePayload(new FormData(event.target));
@@ -259,6 +286,13 @@
       if (!session) return;
 
       if (!hasSupabase) {
+        if (editingId !== null) {
+          window.GANPATI_SHLOKAS = window.GANPATI_SHLOKAS.map((item) => Number(item.id) === editingId ? { ...item, ...payload, id: editingId } : item);
+          cancelEdit();
+          showStatus('Fallback data updated locally.', false);
+          load();
+          return;
+        }
         const nextId = Number((window.getFallbackShlokas().at(-1)?.id || 0)) + 1;
         window.GANPATI_SHLOKAS.push({ ...payload, id: nextId });
         event.target.reset();
@@ -268,15 +302,21 @@
       }
 
       try {
-        const { error } = await sb.from('shlokas').insert(payload);
+        const query = editingId === null
+          ? sb.from('shlokas').insert(payload)
+          : sb.from('shlokas').update(payload).eq('id', editingId);
+        const { error } = await query;
         if (error) throw error;
-        event.target.reset();
-        showStatus('Shloka added successfully.', false);
+        const wasEditing = editingId !== null;
+        cancelEdit();
+        showStatus(wasEditing ? 'Shloka updated successfully.' : 'Shloka added successfully.', false);
         load();
       } catch (error) {
         showStatus(error.message || 'Unable to add shloka.', true);
       }
     });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
 
     async function del(id) {
       if (!confirm('Delete this shloka?')) return;
@@ -313,7 +353,7 @@
         alert('Poster renderer is not ready yet.');
         return;
       }
-      html2canvas(poster, { scale: 2, backgroundColor: '#fffaf1', useCORS: true }).then((canvas) => {
+      html2canvas(poster, { scale: 2, backgroundColor: '#eff6ff', useCORS: true }).then((canvas) => {
         const link = document.createElement('a');
         link.download = 'ganpati-house-master-poster.png';
         link.href = canvas.toDataURL('image/png');
@@ -331,6 +371,7 @@
     window.downloadMasterQr = downloadMasterQr;
     window.downloadMasterPoster = downloadMasterPoster;
     window.del = del;
+    window.editShloka = editShloka;
     load();
   </script>
 </body>
