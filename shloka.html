@@ -8,6 +8,7 @@
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    body { background: radial-gradient(circle at 50% 0%, #7b2918 0%, #35120d 42%, #170907 100%); }
     .page-shell { max-width: 900px; margin: 0 auto; }
     .shloka-card {
       background: rgba(255,255,255,0.06);
@@ -17,7 +18,8 @@
       box-shadow: 0 25px 80px rgba(0,0,0,.25);
       margin-top: 14px;
     }
-    .sanskrit { font-size: clamp(1.7rem, 4vw, 2.6rem); line-height: 1.7; color: #ffe7ad; font-family: Georgia, serif; margin: 20px 0; }
+    .ref { font-size: 1.05rem; color: #d9bd90; font-weight: 800; margin: 8px 0 16px; }
+    .sanskrit { font-size: clamp(1.7rem, 4vw, 2.4rem); line-height: 1.7; color: #ffe7ad; font-family: Georgia, serif; margin: 20px 0; }
     .tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 20px; }
     .tab { background: rgba(255,255,255,.04); border: 1px solid rgba(242,196,92,.3); color: #f7e3b1; border-radius: 999px; padding: 9px 14px; font-weight: 800; cursor: pointer; }
     .tab.active { background: linear-gradient(135deg, #c38b26, #f5d789); color: #310f0b; border-color: transparent; }
@@ -32,20 +34,23 @@
 <body>
   <div class="wrap page-shell">
     <div class="top">
-      <div class="brand">🪔 गणपती बाप्पा मोरया</div>
-      <div class="nav"><a href="index.html" class="alt">Home</a></div>
+      <div class="brand">🪔 GANPATI HOUSE</div>
+      <div class="nav">
+        <a href="index.html" class="alt">Home</a>
+        <a href="shlokas.html" class="alt">Explore Shlokas</a>
+      </div>
     </div>
 
     <section class="hero" style="padding:45px 0 20px;">
       <div class="om">ॐ</div>
       <div class="eyebrow">॥ श्री गणेशाय नमः ॥</div>
       <h1 style="font-size:clamp(2.1rem,6vw,4rem);">Welcome to Our Ganpati House</h1>
-      <p>Welcome! Take a moment to pause, listen and reflect.</p>
+      <p>Pause. Read. Reflect. Listen.</p>
     </section>
 
     <main class="shloka-card" id="app"><div class="muted">Loading your shloka…</div></main>
 
-    <footer>🐘 गणपती बाप्पा मोरया!<br><small>May wisdom, peace and happiness enter your home.</small></footer>
+    <footer>🐘 गणपती बाप्पा मोरया!<br><small>May wisdom, peace and happiness guide your day.</small></footer>
   </div>
 
   <script>
@@ -104,8 +109,9 @@
       const translation = { english: current.english, marathi: current.marathi, hindi: current.hindi }[lang] || current.english;
 
       app.innerHTML = `
-        <div class="eyebrow">${esc(current.category)}</div>
-        <h2>${esc(current.title)}</h2>
+        <div class="eyebrow">${esc(current.problem || 'Life Situation')} → ${esc(current.solution || 'Wisdom')}</div>
+        <h2>${esc(current.title || current.problem)}</h2>
+        <div class="ref">Bhagavad Gita • Chapter ${esc(current.chapter || '')} • Verse ${esc(current.verse || '')}</div>
         <div class="sanskrit">${esc(current.sanskrit)}</div>
         <p class="muted">${esc(current.transliteration || '')}</p>
 
@@ -119,18 +125,18 @@
 
         <div class="info-box">
           <strong>📖 Simple Meaning</strong>
-          <p class="muted">${esc(current.meaning || 'This shloka is a gentle reminder to live with awareness, compassion and balance.')}</p>
+          <p class="muted">${esc(current.meaning || 'This teaching helps guide daily living with balance and wisdom.')}</p>
         </div>
 
         <div class="info-box">
-          <strong>❤️ A Message for You</strong>
-          <p class="muted">${esc(current.message || 'Carry this message with humility and let it guide your daily actions.')}</p>
+          <strong>🌱 For Your Life</strong>
+          <p class="muted">${esc(current.message || 'Carry this lesson with humility and let it guide your response in daily life.')}</p>
         </div>
 
         <div class="voice-row">
-          <button class="btn" type="button" onclick="speakInLanguage('english')">🔊 Listen in English</button>
-          <button class="btn alt" type="button" onclick="speakInLanguage('marathi')">🔊 मराठीत ऐका</button>
-          <button class="btn alt" type="button" onclick="speakInLanguage('hindi')">🔊 हिन्दी में सुनें</button>
+          <button class="btn" type="button" onclick="speakInLanguage('english')">🔊 English</button>
+          <button class="btn alt" type="button" onclick="speakInLanguage('marathi')">🔊 मराठी</button>
+          <button class="btn alt" type="button" onclick="speakInLanguage('hindi')">🔊 हिन्दी</button>
           <button class="btn alt" type="button" onclick="stopVoice()">⏹ Stop</button>
         </div>
         <p class="muted-note" style="margin-top:16px; text-align:center;">Voice uses the browser’s built-in speech engine.</p>

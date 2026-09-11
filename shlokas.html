@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ganpati House | Shloka Collection</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    body { background: radial-gradient(circle at 50% 0%, #7b2918 0%, #35120d 42%, #170907 100%); }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .hero-copy { max-width: 780px; margin: 0 auto; text-align: center; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; margin-top: 24px; }
+    .card {
+      position: relative;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(242,196,92,.28);
+      border-radius: 24px;
+      padding: 20px 18px 18px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.18);
+      min-height: 260px;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 4px;
+      background: linear-gradient(90deg, #f7d680, #c68a22, #f2c45c);
+    }
+    .chip { display: inline-block; background: rgba(245,213,156,.1); border: 1px solid rgba(245,213,156,.25); color: #f5d59c; border-radius: 999px; padding: 6px 10px; font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; margin-bottom: 12px; }
+    .pair { font-size: 1.8rem; font-weight: 900; color: #ffe7ad; margin: 10px 0 2px; }
+    .ref { color: #d7ba82; font-weight: 700; margin: 8px 0 12px; }
+    .preview { color: #f0ddbb; line-height: 1.7; min-height: 80px; }
+    .mt { margin-top: 16px; }
+    .qr-box {
+      width: min(230px, 100%);
+      margin: 20px auto 0;
+      background: #fff;
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.18);
+    }
+    .qr-box > div { width: 100%; aspect-ratio: 1; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">🪔 GANPATI HOUSE</div>
+      <div class="nav">
+        <a href="index.html" class="alt">Home</a>
+        <a href="admin-login.html" class="alt">Admin</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="om">ॐ</div>
+      <div class="eyebrow">॥ श्री गणेशाय नमः ॥</div>
+      <div class="hero-copy">
+        <h1>Life Situations & Bhagavad Gita Wisdom</h1>
+        <p>Choose your moment and open the teaching that brings calm, confidence and clarity.</p>
+      </div>
+    </section>
+
+    <section class="panel" style="text-align:center; margin-bottom:18px;">
+      <h2>🌺 SIX LIFE SITUATIONS</h2>
+      <p class="muted">Each card reflects a real-life challenge and the wisdom that helps move through it with balance.</p>
+    </section>
+
+    <section id="cards" class="grid"></section>
+
+    <section class="panel" style="margin-top:22px; text-align:center;">
+      <h2>📱 MASTER QR</h2>
+      <p class="muted">This is the official public QR for the full experience.</p>
+      <div class="qr-box"><div id="master-qr"></div></div>
+    </section>
+
+    <footer>🐘 गणपती बाप्पा मोरया!<br><small>Scan • Read • Listen • Reflect</small></footer>
+  </div>
+
+  <script>
+    function esc(value) {
+      return String(value || '').replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[m]));
+    }
+
+    async function loadCards() {
+      let items = [];
+      if (window.isSupabaseConfigured && window.isSupabaseConfigured()) {
+        try {
+          const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+          const { data, error } = await sb.from('shlokas').select('*').order('id', { ascending: true });
+          if (!error && data && data.length) items = data;
+        } catch (err) {
+          console.warn('Supabase unavailable, using fallback.', err);
+        }
+      }
+      if (!items.length) items = window.getFallbackShlokas ? window.getFallbackShlokas() : [];
+
+      const container = document.getElementById('cards');
+      container.innerHTML = '';
+
+      items.forEach((item) => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="chip">${esc(item.problem || 'Life Situation')}</div>
+          <div class="pair">${esc(item.problem || '')} → ${esc(item.solution || '')}</div>
+          <div class="ref">Bhagavad Gita • Chapter ${esc(item.chapter || '')} • Verse ${esc(item.verse || '')}</div>
+          <p class="preview">${esc(item.meaning || item.english || '')}</p>
+          <a class="btn mt" href="shloka.html?id=${encodeURIComponent(item.id)}">Open This Shloka →</a>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderMasterQr() {
+      const target = document.getElementById('master-qr');
+      if (!target) return;
+      target.innerHTML = '';
+      new QRCode(target, {
+        text: window.getMasterShlokaUrl ? window.getMasterShlokaUrl() : (window.location.origin + '/shlokas.html'),
+        width: 200,
+        height: 200,
+        colorDark: '#111',
+        colorLight: '#fff'
+      });
+    }
+
+    loadCards();
+    renderMasterQr();
+  </script>
+</body>
+</html>

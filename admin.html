@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Admin — Ganpati Shlokas</title>
+  <title>Admin — Ganpati House</title>
   <link rel="stylesheet" href="styles.css">
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     body { min-height: 100vh; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
@@ -17,21 +18,24 @@
     .table th, .table td { border-bottom: 1px solid rgba(242,196,92,.2); padding: 12px 8px; vertical-align: top; text-align: left; }
     .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .btn.danger { background: #9f2b2b; color: #fff6e0; border-color: rgba(255,255,255,.1); }
-    .qr { width: 116px; height: 116px; border-radius: 12px; overflow: hidden; background: white; display: grid; place-items: center; }
     .status { margin-top: 10px; font-size: .95rem; }
     .status.success { color: #b9ffb6; }
     .status.error { color: #ffb3b3; }
     #logoutBtn { display: none; }
+    .master-qr-panel { margin-top: 24px; padding: 20px; }
+    .master-qr-box { width: min(260px, 100%); margin: 0 auto; background: white; border-radius: 20px; padding: 12px; }
+    .master-qr-box > div { width: 100%; aspect-ratio: 1; }
     @media (max-width: 700px) { .top { flex-direction: column; align-items: flex-start; } }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
-      <div class="brand">🛕 SHLOKA ADMIN STATION</div>
+      <div class="brand">🛕 GANPATI HOUSE ADMIN</div>
       <div class="nav">
-        <a href="index.html" class="alt">Devotee Page</a>
+        <a href="index.html" class="alt">Home</a>
         <a href="print.html" class="alt">Print Center</a>
+        <a href="shlokas.html" class="alt">Public Collection</a>
         <button id="logoutBtn" class="btn alt" type="button">Logout</button>
       </div>
     </div>
@@ -46,33 +50,49 @@
         <h2>Add Shloka</h2>
         <form class="form" id="form">
           <div class="two">
-            <label>Category
-              <input name="category" required placeholder="For Mother / For Father / Students">
+            <label>Problem
+              <input name="problem" required placeholder="Stress / Anger / Fear / Comparison / Failure / Distraction">
             </label>
+            <label>Solution
+              <input name="solution" required placeholder="Patience / Self-Control / Focus">
+            </label>
+          </div>
+          <div class="two">
             <label>Title
-              <input name="title" required placeholder="For Mother">
+              <input name="title" required placeholder="Stress → Patience">
+            </label>
+            <label>Reference
+              <input name="reference" placeholder="Chapter 2 • Verse 14">
+            </label>
+          </div>
+          <div class="two">
+            <label>Chapter
+              <input name="chapter" type="number" min="1" max="18" required placeholder="2">
+            </label>
+            <label>Verse
+              <input name="verse" type="number" min="1" required placeholder="14">
             </label>
           </div>
           <label>Sanskrit Shloka
-            <textarea name="sanskrit" required placeholder="स्वधर्मे निधनं श्रेयः..."></textarea>
+            <textarea name="sanskrit" required placeholder="मात्रास्पर्शास्तु ..."></textarea>
           </label>
           <label>Transliteration
-            <textarea name="transliteration" placeholder="Swadharme nidhanam shreyah..."></textarea>
+            <textarea name="transliteration" placeholder="Mātrāsparśhās tu ..."></textarea>
           </label>
           <label>English Translation
-            <textarea name="english" required placeholder="It is better to perform one’s own duty..."></textarea>
+            <textarea name="english" required placeholder="The contact of the senses ..."></textarea>
           </label>
           <label>Marathi Translation
-            <textarea name="marathi" required placeholder="स्वतःचे कर्तव्य..."></textarea>
+            <textarea name="marathi" required placeholder="इंद्रियांचे विषयांशी ..."></textarea>
           </label>
           <label>Hindi Translation
-            <textarea name="hindi" required placeholder="अपने कर्तव्य को..."></textarea>
+            <textarea name="hindi" required placeholder="इंद्रियों का विषयों से ..."></textarea>
           </label>
           <label>Simple Meaning
-            <textarea name="meaning" placeholder="Explain the idea in easy language"></textarea>
+            <textarea name="meaning" required placeholder="Difficult moments are temporary ..."></textarea>
           </label>
-          <label>Message / Life Application
-            <textarea name="message" placeholder="A practical message for the category"></textarea>
+          <label>Life Message
+            <textarea name="message" required placeholder="Stress can make us feel ..."></textarea>
           </label>
           <button class="btn" type="submit">➕ Add Shloka</button>
           <div id="status" class="status"></div>
@@ -80,17 +100,27 @@
       </section>
     </div>
 
+    <section class="panel master-qr-panel">
+      <h2>MASTER GANPATI QR</h2>
+      <p class="muted">This is the only public QR that should be printed near Ganpati. It always opens the public collection page: /shlokas.html</p>
+      <div class="master-qr-box"><div id="master-qr"></div></div>
+      <div class="action-row" style="justify-content:center; margin-top:14px;">
+        <button class="btn" type="button" onclick="downloadMasterQr()">⬇️ Download QR</button>
+        <button class="btn alt" type="button" onclick="downloadMasterPoster()">⬇️ Download Full Poster</button>
+        <button class="btn alt" type="button" onclick="window.open('print.html', '_blank')">🖨️ Print QR Poster</button>
+      </div>
+    </section>
+
     <section class="panel" style="margin-top:18px;">
-      <h2>All Shlokas & QR Codes</h2>
-      <p class="muted">Each QR opens that exact shloka. Download the QR or open the print center for complete card templates.</p>
+      <h2>All Shlokas</h2>
+      <p class="muted">This dashboard manages the six life-situation teachings used in the public experience.</p>
       <div class="tablewrap">
         <table class="table">
           <thead>
             <tr>
               <th>#</th>
-              <th>Shloka</th>
-              <th>Category</th>
-              <th>QR</th>
+              <th>Theme</th>
+              <th>Reference</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -104,7 +134,6 @@
 
   <script>
     const hasSupabase = window.isSupabaseConfigured && window.isSupabaseConfigured();
-    const base = location.origin + location.pathname.replace(/admin\.html$/, '');
     const sb = hasSupabase ? supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY) : null;
     let data = [];
 
@@ -116,10 +145,6 @@
         '"': '&quot;',
         "'": '&#039;'
       }[m]));
-    }
-
-    function urlFor(id) {
-      return base + 'shloka.html?id=' + encodeURIComponent(id);
     }
 
     function showStatus(message, isError) {
@@ -172,42 +197,40 @@
       }
     }
 
+    function renderMasterQr() {
+      const target = document.getElementById('master-qr');
+      if (!target) return;
+      target.innerHTML = '';
+      new QRCode(target, {
+        text: window.getMasterShlokaUrl ? window.getMasterShlokaUrl() : (window.location.origin + '/shlokas.html'),
+        width: 220,
+        height: 220,
+        colorDark: '#111',
+        colorLight: '#fff'
+      });
+    }
+
     function renderRows(items) {
       const rows = document.getElementById('rows');
       rows.innerHTML = '';
 
       items.forEach((item, index) => {
         const tr = document.createElement('tr');
-        const qrId = 'qr-' + item.id;
         tr.innerHTML = `
           <td>${index + 1}</td>
           <td>
-            <b>${esc(item.title)}</b><br>
-            <span class="muted">${esc(item.sanskrit || '').slice(0, 120)}</span>
+            <b>${esc(item.title || item.problem)}</b><br>
+            <span class="muted">${esc(item.problem || '')} → ${esc(item.solution || '')}</span>
           </td>
-          <td>${esc(item.category)}</td>
-          <td><div id="${qrId}" class="qr"></div></td>
+          <td>Chapter ${esc(item.chapter || '')} • Verse ${esc(item.verse || '')}</td>
           <td>
             <div class="action-row">
-              <button class="btn" type="button" onclick="window.open('print.html', '_blank')">Print Center</button>
-              <button class="btn alt" type="button" onclick="downloadQR(${item.id})">Download QR</button>
-              <a class="btn alt" target="_blank" rel="noopener" href="${urlFor(item.id)}">Open</a>
+              <a class="btn alt" target="_blank" rel="noopener" href="shloka.html?id=${encodeURIComponent(item.id)}">Open</a>
               <button class="btn danger" type="button" onclick="del(${item.id})">Delete</button>
             </div>
           </td>
         `;
         rows.appendChild(tr);
-
-        const qrBox = document.getElementById(qrId);
-        if (qrBox) {
-          new QRCode(qrBox, {
-            text: urlFor(item.id),
-            width: 110,
-            height: 110,
-            colorDark: '#111',
-            colorLight: '#fff'
-          });
-        }
       });
     }
 
@@ -217,13 +240,21 @@
       data = await getShlokas();
       document.getElementById('total').textContent = String(data.length || 0);
       renderRows(data);
+      renderMasterQr();
+    }
+
+    function normalizePayload(formData) {
+      const payload = Object.fromEntries(formData.entries());
+      payload.chapter = Number(payload.chapter || 0);
+      payload.verse = Number(payload.verse || 0);
+      if (!payload.title) payload.title = `${payload.problem || 'Life Situation'} → ${payload.solution || 'Wisdom'}`;
+      if (!payload.reference) payload.reference = `Chapter ${payload.chapter || ''} • Verse ${payload.verse || ''}`;
+      return payload;
     }
 
     document.getElementById('form').addEventListener('submit', async function (event) {
       event.preventDefault();
-      const formData = new FormData(event.target);
-      const payload = Object.fromEntries(formData.entries());
-
+      const payload = normalizePayload(new FormData(event.target));
       const session = await requireAdminSession();
       if (!session) return;
 
@@ -257,7 +288,6 @@
         load();
         return;
       }
-
       try {
         const { error } = await sb.from('shlokas').delete().eq('id', id);
         if (error) throw error;
@@ -267,17 +297,28 @@
       }
     }
 
-    function downloadQR(id) {
-      const box = document.getElementById('qr-' + id);
-      if (!box) return;
-      const canvas = box.querySelector('canvas');
-      const img = box.querySelector('img');
-      const src = canvas ? canvas.toDataURL('image/png') : (img ? img.src : '');
-      if (!src) return;
+    function downloadMasterQr() {
+      const target = document.getElementById('master-qr');
+      const canvas = target && target.querySelector('canvas');
+      if (!canvas) return;
       const a = document.createElement('a');
-      a.href = src;
-      a.download = 'shloka-' + id + '-qr.png';
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'ganpati-house-master-qr.png';
       a.click();
+    }
+
+    function downloadMasterPoster() {
+      const poster = document.querySelector('.master-qr-panel');
+      if (!poster || !window.html2canvas) {
+        alert('Poster renderer is not ready yet.');
+        return;
+      }
+      html2canvas(poster, { scale: 2, backgroundColor: '#fffaf1', useCORS: true }).then((canvas) => {
+        const link = document.createElement('a');
+        link.download = 'ganpati-house-master-poster.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
     }
 
     async function logout() {
@@ -287,7 +328,8 @@
     }
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
-    window.downloadQR = downloadQR;
+    window.downloadMasterQr = downloadMasterQr;
+    window.downloadMasterPoster = downloadMasterPoster;
     window.del = del;
     load();
   </script>

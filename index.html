@@ -3,13 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Ganpati Bappa Morya</title>
+  <title>Ganpati House | Bhagavad Gita Wisdom</title>
   <link rel="stylesheet" href="styles.css">
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
-    .hero { padding-bottom: 18px; }
+    body { background: radial-gradient(circle at 50% 0%, #7b2918 0%, #35120d 42%, #170907 100%); }
+    .hero { padding-bottom: 16px; }
     .hero-copy { max-width: 760px; margin: 0 auto; }
+    .motto { font-size: 1.02rem; line-height: 1.8; color: #f1d8a4; max-width: 720px; margin: 18px auto 0; }
+    .nav a { display: inline-flex; align-items: center; }
     .shloka-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -19,12 +23,13 @@
     .shloka-card {
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(242,196,92,.28);
-      border-radius: 22px;
-      padding: 18px 18px 16px;
+      border-radius: 24px;
+      padding: 22px 20px 18px;
       box-shadow: 0 18px 55px rgba(0,0,0,.18);
       text-align: left;
       position: relative;
       overflow: hidden;
+      min-height: 260px;
     }
     .shloka-card::before {
       content: "";
@@ -39,23 +44,37 @@
       border: 1px solid rgba(245,213,156,.25);
       color: #f5d59c;
       border-radius: 999px;
-      padding: 6px 10px;
-      font-size: .72rem;
+      padding: 7px 10px;
+      font-size: .7rem;
       text-transform: uppercase;
       letter-spacing: .12em;
       font-weight: 800;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
-    .shloka-sanskrit {
-      font-size: 1.2rem;
-      line-height: 1.8;
-      color: #ffe9b4;
-      font-family: Georgia, serif;
-      margin: 12px 0 6px;
-    }
-    .ref { color: #d7ba82; font-weight: 700; margin: 8px 0 14px; }
-    .preview { color: #f0ddbb; line-height: 1.7; min-height: 72px; }
+    .card-pair { font-size: 1.8rem; font-weight: 900; color: #ffe7ad; margin: 10px 0 2px; }
+    .ref { color: #d7ba82; font-weight: 700; margin: 10px 0 12px; }
+    .preview { color: #f0ddbb; line-height: 1.7; min-height: 75px; }
     .read-btn { margin-top: 16px; display: inline-flex; }
+    .qr-panel {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: center;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(242,196,92,.3);
+      border-radius: 26px;
+      padding: 22px;
+    }
+    .qr-box {
+      width: min(260px, 100%);
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.18);
+    }
+    .qr-box > div { width: 100%; aspect-ratio: 1; }
     .petal {
       position: fixed;
       width: 10px; height: 18px;
@@ -66,19 +85,19 @@
       pointer-events: none;
       z-index: 0;
     }
-    @keyframes fall {
-      0% { transform: translateY(-20vh) rotate(0deg); opacity: 0; }
-      10% { opacity: .8; }
-      100% { transform: translateY(110vh) rotate(120deg); opacity: 0; }
-    }
+    @keyframes fall { 0% { transform: translateY(-20vh) rotate(0deg); opacity: 0; } 10% { opacity: .8; } 100% { transform: translateY(110vh) rotate(120deg); opacity: 0; } }
+    @media (max-width: 760px) { .qr-panel { grid-template-columns: 1fr; } }
     @media (max-width: 620px) { .hero { padding-top: 32px; } }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
-      <div class="brand">🪔 GANPATI BAPPA</div>
-      <div class="nav"><a href="admin.html" class="alt">Admin</a></div>
+      <div class="brand">🪔 GANPATI HOUSE</div>
+      <div class="nav">
+        <a href="index.html" class="alt">Home</a>
+        <a href="shlokas.html" class="alt">Explore Shlokas</a>
+      </div>
     </div>
 
     <section class="hero">
@@ -86,19 +105,31 @@
       <div class="eyebrow">॥ श्री गणेशाय नमः ॥</div>
       <div class="hero-copy">
         <h1>Welcome to Our Ganpati House</h1>
-        <p>Take a moment to discover the wisdom of the Bhagavad Gita. Scan a shloka, listen to its meaning, and carry its message with you.</p>
+        <p class="motto">Sometimes life gives us stress, anger, fear, comparison, failure and distraction. The Bhagavad Gita offers timeless wisdom to help us face them with a calmer mind.</p>
       </div>
       <div style="margin-top:25px">
-        <a class="btn" href="#shloka-list">Begin the Experience</a>
+        <a class="btn" href="shlokas.html">Find Wisdom for Your Moment</a>
       </div>
     </section>
 
-    <section id="message" class="panel" style="text-align:center; margin-bottom:18px;">
-      <h2>🌺 10 Shlokas • 10 Life Moments</h2>
-      <p class="muted">Each QR opens a single shloka. Read the Sanskrit, switch between English, Marathi and Hindi, and listen to the message in your own language.</p>
+    <section class="panel" style="text-align:center; margin-bottom:18px;">
+      <h2>🌺 FIND WISDOM FOR YOUR MOMENT</h2>
+      <p class="muted">Choose the life situation that resonates with you and open the teaching that brings clarity, patience and peace.</p>
     </section>
 
     <section id="shloka-list" class="shloka-grid"></section>
+
+    <section class="qr-panel">
+      <div>
+        <div class="eyebrow" style="margin-top:0; letter-spacing:.18em;">📱 TAKE THE WISDOM WITH YOU</div>
+        <h2 style="margin:8px 0 10px;">Scan the master QR</h2>
+        <p class="muted">Scan the QR code to explore six timeless teachings from the Bhagavad Gita. Read the verse, understand the meaning and listen in English, Marathi or Hindi.</p>
+        <p style="margin-top:12px; font-weight:800; color:#f5d59c;">Scan • Read • Listen • Reflect</p>
+      </div>
+      <div class="qr-box">
+        <div id="master-qr"></div>
+      </div>
+    </section>
 
     <footer>🐘 गणपती बाप्पा मोरया!<br><small>Scan • Read • Listen • Reflect</small></footer>
   </div>
@@ -120,17 +151,12 @@
         try {
           const sb = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
           const { data, error } = await sb.from('shlokas').select('*').order('id', { ascending: true });
-          if (!error && data && data.length) {
-            items = data;
-          }
+          if (!error && data && data.length) items = data;
         } catch (err) {
           console.warn('Supabase unavailable, using fallback dataset.', err);
         }
       }
-
-      if (!items.length) {
-        items = window.getFallbackShlokas ? window.getFallbackShlokas() : [];
-      }
+      if (!items.length) items = window.getFallbackShlokas ? window.getFallbackShlokas() : [];
 
       const container = document.getElementById('shloka-list');
       container.innerHTML = '';
@@ -139,18 +165,31 @@
         const card = document.createElement('article');
         card.className = 'shloka-card';
         card.innerHTML = `
-          <div class="shloka-chip">${esc(item.category)}</div>
-          <h3>${esc(item.title)}</h3>
-          <div class="shloka-sanskrit">${esc(item.sanskrit)}</div>
-          <div class="ref">— गीता ${esc(item.id || 1)}. ${esc(item.id || 1)}</div>
+          <div class="shloka-chip">${esc(item.problem || 'Life Situation')}</div>
+          <div class="card-pair">${esc(item.problem || '')} → ${esc(item.solution || '')}</div>
+          <div class="ref">Bhagavad Gita • Chapter ${esc(item.chapter || '')} • Verse ${esc(item.verse || '')}</div>
           <p class="preview">${esc(item.meaning || item.english || '')}</p>
-          <a class="btn read-btn" href="shloka.html?id=${encodeURIComponent(item.id)}">Read & Listen →</a>
+          <a class="btn read-btn" href="shloka.html?id=${encodeURIComponent(item.id)}">Explore Shloka →</a>
         `;
         container.appendChild(card);
       });
     }
 
+    function renderMasterQr() {
+      const target = document.getElementById('master-qr');
+      if (!target) return;
+      target.innerHTML = '';
+      new QRCode(target, {
+        text: window.getMasterShlokaUrl ? window.getMasterShlokaUrl() : (window.location.origin + '/shlokas.html'),
+        width: 220,
+        height: 220,
+        colorDark: '#111',
+        colorLight: '#fff'
+      });
+    }
+
     loadShlokas();
+    renderMasterQr();
 
     setInterval(() => {
       const petal = document.createElement('div');
