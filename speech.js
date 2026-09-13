@@ -2,10 +2,10 @@
   'use strict';
 
   const profiles = {
-    sanskrit: { languages: ['sa-IN', 'sa', 'hi-IN', 'hi'], rate: 0.76, pitch: 0.92 },
-    english: { languages: ['en-IN', 'en-US', 'en'], rate: 0.92, pitch: 1 },
-    marathi: { languages: ['mr-IN', 'mr', 'hi-IN', 'hi'], rate: 0.86, pitch: 1 },
-    hindi: { languages: ['hi-IN', 'hi'], rate: 0.86, pitch: 1 }
+    sanskrit: { languages: ['sa-IN', 'sa', 'hi-IN', 'hi'], rate: 0.75, pitch: 0.92 },
+    english: { languages: ['en-IN', 'en-US', 'en'], rate: 0.9, pitch: 1 },
+    marathi: { languages: ['mr-IN', 'mr', 'hi-IN', 'hi'], rate: 0.85, pitch: 1 },
+    hindi: { languages: ['hi-IN', 'hi'], rate: 0.85, pitch: 1 }
   };
 
   let voices = [];

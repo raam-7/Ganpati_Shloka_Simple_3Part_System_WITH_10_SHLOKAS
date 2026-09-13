@@ -128,19 +128,14 @@
           <p class="muted"><strong>Transliteration</strong><br>${esc(current.transliteration || '')}</p>
         </section>
 
-        <section class="info-box">
-          <strong>English Translation</strong>
-          <p class="translation">${esc(current.english)}</p>
-        </section>
-
-        <section class="info-box">
-          <strong>Marathi Translation</strong>
-          <p class="translation">${esc(current.marathi)}</p>
-        </section>
-
-        <section class="info-box">
-          <strong>Hindi Translation</strong>
-          <p class="translation">${esc(current.hindi)}</p>
+        <div class="tabs" role="tablist" aria-label="Translation language">
+          <button class="tab ${lang === 'english' ? 'active' : ''}" type="button" role="tab" aria-selected="${lang === 'english'}" onclick="renderTranslation('english')">English</button>
+          <button class="tab ${lang === 'hindi' ? 'active' : ''}" type="button" role="tab" aria-selected="${lang === 'hindi'}" onclick="renderTranslation('hindi')">हिन्दी</button>
+          <button class="tab ${lang === 'marathi' ? 'active' : ''}" type="button" role="tab" aria-selected="${lang === 'marathi'}" onclick="renderTranslation('marathi')">मराठी</button>
+        </div>
+        <section class="info-box" role="tabpanel">
+          <strong>${lang === 'english' ? 'English Translation' : lang === 'hindi' ? 'Hindi Translation' : 'Marathi Translation'}</strong>
+          <p class="translation">${esc(current[lang] || '')}</p>
         </section>
 
         <div class="info-box">
@@ -150,20 +145,20 @@
 
         <div class="info-box">
           <strong>🌱 For Your Life</strong>
-          <p class="muted">${esc(current.message || 'Carry this lesson with humility and let it guide your response in daily life.')}</p>
+          <p class="muted">${esc(current.message || current.life_message || 'Carry this lesson with humility and let it guide your response in daily life.')}</p>
         </div>
 
         <section class="voice-section" aria-label="Voice controls">
           <h3>🔊 Listen to Shloka</h3>
           <div class="voice-row">
-            <button class="btn" data-speech-language="sanskrit" type="button" onclick="speakInLanguage('sanskrit')">▶ Sanskrit</button>
+            <button class="btn" data-speech-language="sanskrit" type="button" onclick="speakInLanguage('sanskrit')">🔊 Sanskrit</button>
           </div>
           <p id="voice-note" class="muted-note" style="margin:12px 0 0; text-align:center;">Voice availability and pronunciation may vary by device and browser.</p>
           <h3 style="margin-top:18px;">🔊 Listen to Translation</h3>
           <div class="voice-row">
-            <button class="btn alt" data-speech-language="english" type="button" onclick="speakInLanguage('english')">🇬🇧 English</button>
-            <button class="btn alt" data-speech-language="hindi" type="button" onclick="speakInLanguage('hindi')">🇮🇳 हिंदी</button>
-            <button class="btn alt" data-speech-language="marathi" type="button" onclick="speakInLanguage('marathi')">🇮🇳 मराठी</button>
+            <button class="btn alt" data-speech-language="english" type="button" onclick="speakInLanguage('english')">🔊 English</button>
+            <button class="btn alt" data-speech-language="hindi" type="button" onclick="speakInLanguage('hindi')">🔊 हिन्दी</button>
+            <button class="btn alt" data-speech-language="marathi" type="button" onclick="speakInLanguage('marathi')">🔊 मराठी</button>
           </div>
           <div class="voice-actions">
             <button class="btn alt" type="button" onclick="pauseVoice()">⏸ Pause</button>
@@ -209,7 +204,7 @@
         const buttonLanguage = button.dataset.speechLanguage;
         const isActive = state !== 'idle' && buttonLanguage === language;
         button.classList.toggle('is-playing', isActive);
-        button.textContent = isActive ? (state === 'paused' ? '⏸ Paused' : '🔊 Playing...') : buttonLanguage === 'sanskrit' ? '▶ Sanskrit' : buttonLanguage === 'english' ? '🇬🇧 English' : buttonLanguage === 'hindi' ? '🇮🇳 हिंदी' : '🇮🇳 मराठी';
+        button.textContent = isActive ? (state === 'paused' ? '⏸ Paused' : '🔊 Playing...') : buttonLanguage === 'sanskrit' ? '🔊 Sanskrit' : buttonLanguage === 'english' ? '🔊 English' : buttonLanguage === 'hindi' ? '🔊 हिन्दी' : '🔊 मराठी';
       });
     }
 

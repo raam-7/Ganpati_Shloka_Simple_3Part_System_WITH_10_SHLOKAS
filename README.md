@@ -4,7 +4,7 @@ This project is a static HTML/CSS/JavaScript app and is already suitable for Ver
 
 ## Project structure
 
-- index.html — public homepage with the six life-situation shlokas
+- index.html — public homepage with the eight life-situation shlokas
 - admin.html — authenticated admin dashboard for add / edit / view / delete / QR / print
 - shloka.html — exact shloka detail page for a QR scan
 - print.html — printable shloka cards
@@ -25,7 +25,7 @@ This project is a static HTML/CSS/JavaScript app and is already suitable for Ver
 
 ### 2. Public homepage — /
 - Shows the welcome message
-- Shows the six shlokas visibly
+- Shows all eight shlokas visibly
 - Each shloka card includes title, category, Sanskrit, preview and Read & Listen button
 
 ### 3. Individual shloka page — /shloka.html?id=...
@@ -79,15 +79,17 @@ IMPORTANT:
 
 ## Required database data
 
-The SQL file includes six life-situation shlokas:
-1. Stress → Patience
-2. Anger → Self-Control
-3. Fear → Courage (Chapter 2, Verse 3)
-4. Comparison → Self-Belief
-5. Failure → Learning
-6. Distraction → Focus
+The SQL file includes eight teachings:
+1. कर्म → निष्काम कर्म (Chapter 2, Verse 47)
+2. ज्ञान → ज्ञान की शक्ति (Chapter 4, Verse 38)
+3. धैर्य → स्थिरता (Chapter 18, Verse 33)
+4. संयम → आत्मनियंत्रण (Chapter 2, Verse 58)
+5. दृढ़ता → एकाग्र संकल्प (Chapter 2, Verse 41)
+6. भक्ति → ईश्वराशी जोडलेले मन (Chapter 12, Verse 8)
+7. समरसता → समत्व (Chapter 2, Verse 48)
+8. सत्य → सत्यप्रिय वाणी (Chapter 17, Verse 15)
 
-The SQL file uses an idempotent seed/update flow so it does not duplicate records and refreshes the six canonical records when re-run.
+The SQL file removes only the six original demo pairs and uses an idempotent seed/update flow for the eight canonical records when re-run. The existing `message` column is retained as the database name for Life Message.
 
 ## Vercel deployment
 
@@ -160,7 +162,7 @@ Then open:
 ## Recommended deployment checklist
 
 Before going live, confirm:
-- homepage shows all six shlokas
+- homepage shows all eight shlokas
 - admin page works
 - QR code links use the deployed domain
 - shloka page loads the exact shloka by ID
@@ -191,9 +193,9 @@ git push -u origin main
 After deployment, test these pages:
 
 1. Homepage
-   - confirm it shows the welcome message and all six shlokas
+   - confirm it shows the welcome message and all eight shlokas
 2. Admin page
-   - confirm total count is six
+   - confirm total count is eight
    - add a shloka
    - delete a shloka
 3. QR generation

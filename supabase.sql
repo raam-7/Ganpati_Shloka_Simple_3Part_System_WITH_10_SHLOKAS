@@ -17,113 +17,115 @@ create table if not exists public.shlokas (
 
 alter table public.shlokas enable row level security;
 
-create policy "public can read shlokas"
-on public.shlokas for select to anon, authenticated using (true);
+drop policy if exists "public can read shlokas" on public.shlokas;
+drop policy if exists "admin can insert shlokas" on public.shlokas;
+drop policy if exists "admin can update shlokas" on public.shlokas;
+drop policy if exists "admin can delete shlokas" on public.shlokas;
+create policy "public can read shlokas" on public.shlokas for select to anon, authenticated using (true);
+create policy "admin can insert shlokas" on public.shlokas for insert to authenticated with check (true);
+create policy "admin can update shlokas" on public.shlokas for update to authenticated using (true) with check (true);
+create policy "admin can delete shlokas" on public.shlokas for delete to authenticated using (true);
 
-create policy "admin can insert shlokas"
-on public.shlokas for insert to authenticated with check (true);
+create unique index if not exists shlokas_chapter_verse_key on public.shlokas (chapter, verse);
 
-create policy "admin can update shlokas"
-on public.shlokas for update to authenticated using (true) with check (true);
+-- Remove only the six original demo records. Unrelated admin/user data is preserved.
+delete from public.shlokas
+where (problem, solution) in (
+  ('Stress', 'Patience'), ('Anger', 'Self-Control'), ('Fear', 'Courage'),
+  ('Comparison', 'Self-Belief'), ('Failure', 'Learning'), ('Distraction', 'Focus')
+);
 
-create policy "admin can delete shlokas"
-on public.shlokas for delete to authenticated using (true);
-
+-- Re-running this migration updates the eight canonical verses without duplicates.
 insert into public.shlokas (
-  id, problem, solution, title, chapter, verse, sanskrit, transliteration, english, marathi, hindi, meaning, message
+  id, problem, solution, title, chapter, verse, sanskrit, transliteration,
+  english, marathi, hindi, meaning, message
 ) values
-  (1, 'Stress', 'Patience', 'Stress → Patience', 2, 14, 'मात्रास्पर्शास्तु कौन्तेय शीतोष्णसुखदुःखदाः। आगमापायिनोऽनित्यास् तांस्तितिक्षस्व भारत।।', 'Mātrāsparśhās tu kaunteya śītoṣṇa-sukha-duḥkhadāḥ | āgamāpāyino ''nityās tāṁs titikṣasva bhārata ||', 'The contact of the senses with sense objects gives rise to heat and cold, pleasure and pain; they come and go, and are impermanent. Endure them, O Bharata.', 'इंद्रियांचे विषयांशी संपर्क येऊन थंडी-उष्णता, सुख-दुःख निर्माण होतात. ते येतात आणि जातात, म्हणून ते क्षणिक आहेत. हे सहन कर, हे भारत!', 'इंद्रियों का विषयों से संपर्क होने पर शीत-उष्णता, सुख-दुःख उत्पन्न होते हैं; वे आते-जाते हैं और अनित्य हैं। उन्हें सहन करो, हे भरत!', 'Difficult moments are temporary; patience helps us stay balanced instead of reacting impulsively.', 'Stress can make us feel that a difficult period will last forever. This teaching reminds us that many experiences are temporary. Instead of reacting immediately, give yourself time, patience and balance.'),
-  (2, 'Anger', 'Self-Control', 'Anger → Self-Control', 2, 63, 'क्रोधाद्भवति सम्मोहः सम्मोहात्स्मृतिविभ्रमः। स्मृतिभ्रंशाद्बुद्धिनाशो बुद्धिनाशात्प्रणश्यति।।', 'Krodhād bhavati sammohah sammohāt smṛti-vibhramah | smṛti-bhranśhād buddhi-nāśho buddhi-nāśhāt praṇaśyati ||', 'From anger comes delusion; from delusion, confusion of memory; from confusion, loss of reason; and from loss of reason, one is lost.', 'क्रोधामुळे भ्रम निर्माण होतो, भ्रमामुळे स्मरणशक्ती गोंधळते, स्मरणशक्ती गोंधळल्यावर बुद्धी नष्ट होते आणि बुद्धी नष्ट झाल्यावर मनुष्य हरवून जातो.', 'क्रोध से मोह उत्पन्न होता है, मोह से स्मृति का भ्रांति होता है, स्मृति के भ्रांति से बुद्धि का नाश होता है, और बुद्धि के नाश से व्यक्ति नष्ट हो जाता है।', 'Anger distorts perception and weakens judgment; pausing before reacting is the path to wisdom.', 'When anger rises, clarity often falls. This verse encourages a pause: breathe, observe, and choose response over reaction. Self-control protects both peace and judgment.'),
-  (3, 'Fear', 'Courage', 'Fear → Courage', 16, 1, 'अभयं सत्त्वसंशुद्धिर्ज्ञानयोगव्यवस्थितिः। दानं दमश्च यज्ञश्च स्वाध्यायस्तप आर्जवम्।।', 'Abhayaṁ sattva-saṁśuddhir jñāna-yoga-vyavasthitiḥ | dānaṁ damaś ca yajñaś ca svādhyāyas tapa ārjavam ||', 'Fearlessness, purification of the mind, steadfastness in knowledge and yoga, charity, self-control, sacrifice, study of the scriptures, austerity, and sincerity—these are the qualities of the virtuous.', 'भयांतीत मन, शुद्ध भावना, ज्ञानी जीवनाची स्थिरता, दान, इंद्रियसंयम, यज्ञ, आत्मशिक्षण, तप आणि साधेपणा—याच गोष्टी साधुपुरुषांच्या जीवनाचे लक्षण असतात.', 'भयहीनता, मन की शुद्धता, ज्ञानयोग में स्थिरता, दान, दम, यज्ञ, स्वाध्याय, तप और सरलता—ये सत्पुरुषों के लक्षण हैं।', 'Courage grows when the mind becomes steady, clear and rooted in dharma.', 'Fear often appears when we focus only on what may go wrong. This teaching reminds us that inner strength is built through clarity, discipline and courageous action.'),
-  (4, 'Comparison', 'Self-Belief', 'Comparison → Self-Belief', 3, 35, 'श्रेयान्स्वधर्मो विगुणः परधर्मात्स्वनुष्ठितात्। स्वधर्मे निधनं श्रेयः परधर्मो भयावहः।।', 'Śreyaṅ svadharmo vigunah paradharmāt svanuṣṭhitāt | svadharme nidhanam śreyaḥ paradharmo bhayāvahaḥ ||', 'It is better to follow one''s own duty imperfectly than to follow another''s duty perfectly. Better to die in one''s own duty than to live in the duty of another, which is frightening.', 'तुमचा स्वतःचा धर्म अपूर्णपणेही चांगला आहे; दुसऱ्याचा धर्म पूर्णपणे केला तरीही तो चांगला नसतो. स्वतःच्या धर्मात मरणे श्रेयस्कर आहे; दुसऱ्याच्या धर्मात राहणे भीतीदायक आहे.', 'अपने धर्म का पालन अपूर्ण रूप से भी अच्छा है, दूसरे के धर्म का पालन पूर्ण रूप से भी उससे अच्छा नहीं है। अपने धर्म में मृत्यु श्रेष्ठ है, जबकि दूसरे के धर्म का पालन भयकारी है।', 'Your path is unique; comparison steals peace and confidence. A life grounded in your own values is stronger than imitation.', 'Comparing ourselves with others often clouds our strengths. This teaching asks us to honour our own path, trust our growth, and walk with sincerity instead of envy.'),
-  (5, 'Failure', 'Learning', 'Failure → Learning', 2, 47, 'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन। मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि।।', 'Karmaṇy evādhikāras te mā phaleṣhu kadācana | mā karma-phala-hetur bhūr mā te saṅgo ''stv akarmaṇi ||', 'You have a right to perform your duty, but you are not entitled to the results of your actions. Never act for the sake of results, nor become attached to inaction.', 'तुला कर्म करण्याचा अधिकार आहे; पण फळांवर तुझा अधिकार नाही. फळासाठी काम करू नको आणि अकार्याकडेही जडून राहू नको.', 'तुम्हारा अधिकार केवल कर्म करने में है, फल में नहीं। कर्म के परिणाम के कारण नहीं करना, और निष्क्रियता में भी आसक्त न होना।', 'Effort matters more than attachment to outcomes; failure becomes a teacher, not a verdict.', 'A setback is not the end of your worth. This verse teaches us to keep acting sincerely without tying our identity to one result. Learning from effort matters more than being defined by one outcome.'),
-  (6, 'Distraction', 'Focus', 'Distraction → Focus', 6, 26, 'यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्। ततस्ततो नियम्यैतदात्मन्येव वशं नयेत्।।', 'Yato yato niścarati manaś cañcalam asthiram | tatas tato niyamya etad ātmany eva vaśaṁ nayet ||', 'Whenever the mind wanders, unstable and restless, bring it back under control and place it in the Self.', 'जिथेही मन अस्थिर आणि चंचल होऊन फिरते, तिथे तिथून ते परत आणून आत्म्यात वश करून ठेवावे.', 'जहाँ भी मन अस्थिर और चंचल होकर विचरता है, वहाँ से उसे वापस लाकर आत्मा में वश में करना चाहिए।', 'Focus is a practice of returning the mind to what matters, again and again.', 'Distraction is natural, but concentration is built through repeated return. This teaching reminds us to gently redirect attention from noise to purpose, one moment at a time.')
+(1, 'कर्म', 'निष्काम कर्म', 'कर्म पर ध्यान — फल की चिंता से मुक्ति', 2, 47,
+ 'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।
+मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि ॥',
+ 'karmaṇy evādhikāras te mā phaleṣu kadācana |
+mā karma-phala-hetur bhūr mā te saṅgo ''stv akarmaṇi ||',
+ 'You have the right to perform your actions, but not to the results of those actions. Do not make the result the sole motive of your action, nor become attached to inaction.',
+ 'तुला कर्म करण्याचा अधिकार आहे; त्याच्या फळावर तुझा अधिकार नाही. कर्माच्या फळालाच आपल्या कृतीचे एकमेव उद्दिष्ट मानू नकोस आणि निष्क्रियतेशीही आसक्त होऊ नकोस.',
+ 'तुम्हारा अधिकार केवल कर्म करने में है, उसके फल में नहीं। कर्म के फल को ही अपने कर्म का एकमात्र उद्देश्य मत बनाओ और अकर्मण्यता में भी आसक्त मत हो।',
+ 'Do your work sincerely and give your best effort without allowing the result to control your peace of mind.',
+ 'Focus on what you can do today. Let the result come in its own time.'),
+(2, 'ज्ञान', 'ज्ञान की शक्ति', 'ज्ञान — जीवन को प्रकाशित करने वाली शक्ति', 4, 38,
+ 'न हि ज्ञानेन सदृशं पवित्रमिह विद्यते ।
+तत्स्वयं योगसंसिद्धः कालेनात्मनि विन्दति ॥',
+ 'na hi jñānena sadṛśaṃ pavitram iha vidyate |
+tat svayaṃ yoga-saṃsiddhaḥ kālenātmani vindati ||',
+ 'There is nothing in this world as purifying as knowledge. One who becomes perfected through Yoga realizes that knowledge within oneself in due course.',
+ 'या जगात ज्ञानासारखे पवित्र करणारे दुसरे काहीही नाही. योगाने सिद्ध झालेला मनुष्य योग्य वेळी ते ज्ञान आपल्या अंतःकरणात अनुभवतो.',
+ 'इस संसार में ज्ञान के समान पवित्र करने वाला कुछ भी नहीं है। योग में सिद्ध हुआ व्यक्ति समय के साथ उस ज्ञान को अपने भीतर अनुभव करता है।',
+ 'True knowledge does more than give information; it transforms the way we understand ourselves and life.',
+ 'Keep learning. Knowledge turns confusion into clarity.'),
+(3, 'धैर्य', 'स्थिरता', 'धैर्य — कठीण काळात मनाची स्थिरता', 18, 33,
+ 'धृत्या यया धारयते मनःप्राणेन्द्रियक्रियाः ।
+योगेनाव्यभिचारिण्या धृतिः सा पार्थ सात्त्विकी ॥',
+ 'dhṛtyā yayā dhārayate manaḥ-prāṇendriya-kriyāḥ |
+yogenāvyabhicāriṇyā dhṛtiḥ sā pārtha sāttvikī ||',
+ 'O Arjuna, that firmness by which one steadily sustains the activities of the mind, vital forces, and senses through unwavering practice is called firmness born of goodness.',
+ 'हे पार्था, ज्या अढळ धैर्याने योगाच्या मार्गावर मन, प्राण आणि इंद्रियांच्या क्रियांना स्थिर ठेवले जाते, त्या धैर्याला सात्त्विक धृती म्हणतात.',
+ 'हे पार्थ, जिस अटल धैर्य के द्वारा मन, प्राण और इन्द्रियों की क्रियाओं को निरंतर योग में स्थिर रखा जाता है, उस धैर्य को सात्त्विक धृति कहा जाता है।',
+ 'Patience is not simply waiting. It is the inner strength to remain steady while continuing the right effort.',
+ 'Stay steady when life becomes difficult. Strength grows through consistency.'),
+(4, 'संयम', 'आत्मनियंत्रण', 'संयम — स्वयं पर नियंत्रण', 2, 58,
+ 'यदा संहरते चायं कूर्मोऽङ्गानीव सर्वशः ।
+इन्द्रियाणीन्द्रियार्थेभ्यस्तस्य प्रज्ञा प्रतिष्ठिता ॥',
+ 'yadā saṃharate cāyaṃ kūrmo ''ṅgānīva sarvaśaḥ |
+indriyāṇīndriyārthebhyas tasya prajñā pratiṣṭhitā ||',
+ 'When a person withdraws the senses from their objects, just as a tortoise withdraws its limbs, their wisdom becomes firmly established.',
+ 'जसा कासव आपल्या अवयवांना सर्व बाजूंनी आत ओढून घेतो, त्याप्रमाणे जो मनुष्य आपल्या इंद्रियांना त्यांच्या विषयांपासून दूर ठेवतो, त्याची बुद्धी स्थिर होते.',
+ 'जैसे कछुआ अपने अंगों को चारों ओर से समेट लेता है, वैसे ही जो व्यक्ति अपनी इन्द्रियों को उनके विषयों से हटा लेता है, उसकी बुद्धि स्थिर हो जाती है।',
+ 'Self-control means knowing when to step back from distractions, impulses, and temptations.',
+ 'Real control is not controlling the world; it is learning to control yourself.'),
+(5, 'दृढ़ता', 'एकाग्र संकल्प', 'दृढ़ता — एकाग्र मन आणि ठाम संकल्प', 2, 41,
+ 'व्यवसायात्मिका बुद्धिरेकेह कुरुनन्दन ।
+बहुशाखा ह्यनन्ताश्च बुद्धयोऽव्यवसायिनाम् ॥',
+ 'vyavasāyātmikā buddhir ekeha kuru-nandana |
+bahu-śākhā hy anantāś ca buddhayo ''vyavasāyinām ||',
+ 'O joy of the Kurus, the resolute mind is one-pointed, whereas the thoughts of the irresolute are many-branched and endless.',
+ 'हे कुरुनंदना, दृढनिश्चयी मनाची बुद्धी एकाग्र आणि एकमुखी असते; पण ज्यांचा निश्चय दृढ नसतो, त्यांच्या बुद्धीचे विचार अनेक दिशांना विखुरलेले असतात.',
+ 'हे कुरुनन्दन, दृढ़ निश्चय वाले व्यक्ति की बुद्धि एकाग्र होती है, जबकि अस्थिर और अनिश्चित मन वाले लोगों के विचार अनेक दिशाओं में भटकते रहते हैं।',
+ 'When your purpose is clear, your mind becomes focused instead of constantly moving in different directions.',
+ 'A clear goal gives your energy a direction.'),
+(6, 'भक्ति', 'ईश्वराशी जोडलेले मन', 'भक्ति — मन आणि बुद्धी परमेश्वराशी जोडणे', 12, 8,
+ 'मय्येव मन आधत्स्व मयि बुद्धिं निवेशय ।
+निवसिष्यसि मय्येव अत ऊर्ध्वं न संशयः ॥',
+ 'mayy eva mana ādhatsva mayi buddhiṃ niveśaya |
+nivasiṣyasi mayy eva ata ūrdhvaṃ na saṃśayaḥ ||',
+ 'Fix your mind on Me alone and place your intellect in Me. Then you will dwell in Me; there is no doubt about it.',
+ 'तुझे मन माझ्यात स्थिर कर आणि तुझी बुद्धी माझ्यात अर्पण कर. त्यानंतर तू माझ्यातच स्थित होशील; यात काहीही संशय नाही.',
+ 'अपने मन को मुझमें स्थिर करो और अपनी बुद्धि को मुझमें लगाओ। तब तुम मुझमें ही स्थित रहोगे; इसमें कोई संदेह नहीं है।',
+ 'Bhakti means directing the mind and intellect toward the Divine with trust, remembrance, and surrender.',
+ 'When the mind has something higher to hold on to, life becomes calmer and more meaningful.'),
+(7, 'समरसता', 'समत्व', 'समरसता — सुख-दुःखात समभाव', 2, 48,
+ 'योगस्थः कुरु कर्माणि सङ्गं त्यक्त्वा धनञ्जय ।
+सिद्ध्यसिद्ध्योः समो भूत्वा समत्वं योग उच्यते ॥',
+ 'yogasthaḥ kuru karmāṇi saṅgaṃ tyaktvā dhanañjaya |
+siddhy-asiddhyoḥ samo bhūtvā samatvaṃ yoga ucyate ||',
+ 'Established in Yoga, perform your actions without attachment. Remain even-minded in success and failure; this evenness of mind is called Yoga.',
+ 'हे धनंजया, योगात स्थिर राहून आसक्ती सोडून कर्म कर. यश आणि अपयश दोन्हीमध्ये समभाव ठेव; या समत्वालाच योग म्हटले आहे.',
+ 'हे धनंजय, योग में स्थित होकर आसक्ति छोड़कर कर्म करो। सफलता और असफलता में समान भाव रखो; इसी समत्व को योग कहा गया है।',
+ 'Balance does not mean having no emotions. It means not allowing success or failure to control your inner state.',
+ 'Stay humble in success and strong in failure.'),
+(8, 'सत्य', 'सत्यप्रिय वाणी', 'सत्य — सत्य आणि करुणामय वाणी', 17, 15,
+ 'अनुद्वेगकरं वाक्यं सत्यं प्रियहितं च यत् ।
+स्वाध्यायाभ्यसनं चैव वाङ्मयं तप उच्यते ॥',
+ 'anudvega-karaṃ vākyaṃ satyaṃ priya-hitaṃ ca yat |
+svādhyāyābhyasanaṃ caiva vāṅ-mayaṃ tapa ucyate ||',
+ 'Speech that does not cause distress, that is truthful, pleasant, and beneficial, together with the disciplined study of sacred knowledge, is called austerity of speech.',
+ 'ज्या वाणीमुळे कोणाला उद्वेग होत नाही, जी सत्य, प्रिय आणि हितकारक आहे, तसेच स्वाध्यायाचा अभ्यास — याला वाणीचे तप म्हटले आहे.',
+ 'जो वचन किसी को उद्विग्न न करे, जो सत्य, प्रिय और हितकारी हो, तथा स्वाध्याय का अभ्यास — इसे वाणी का तप कहा गया है।',
+ 'Speaking the truth is important, but truth should also be expressed with kindness and concern for others.',
+ 'Speak the truth, but let your words heal rather than hurt.')
 on conflict (id) do update set
-  problem = excluded.problem,
-  solution = excluded.solution,
-  title = excluded.title,
-  chapter = excluded.chapter,
-  verse = excluded.verse,
-  sanskrit = excluded.sanskrit,
-  transliteration = excluded.transliteration,
-  english = excluded.english,
-  marathi = excluded.marathi,
-  hindi = excluded.hindi,
-  meaning = excluded.meaning,
+  problem = excluded.problem, solution = excluded.solution, title = excluded.title,
+  chapter = excluded.chapter, verse = excluded.verse, sanskrit = excluded.sanskrit,
+  transliteration = excluded.transliteration, english = excluded.english,
+  marathi = excluded.marathi, hindi = excluded.hindi, meaning = excluded.meaning,
   message = excluded.message;
 
--- Required correction for the Fear teaching: Bhagavad Gita, Chapter 2, Verse 3.
-update public.shlokas
-set chapter = 2,
-    verse = 3,
-    problem = 'Fear',
-    solution = 'Courage (धैर्य / शौर्य)',
-    title = 'Rise Above Fear — Courage to Face Challenges',
-    sanskrit = 'क्लैब्यं मा स्म गमः पार्थ नैतत्त्वय्युपपद्यते ।\nक्षुद्रं हृदयदौर्बल्यं त्यक्त्वोत्तिष्ठ परन्तप ॥',
-    transliteration = 'klaibyaṁ mā sma gamaḥ pārtha naitat tvayy upapadyate | kṣudraṁ hṛdaya-daurbalyaṁ tyaktvottiṣṭha parantapa ||',
-    english = 'O Arjuna, do not give in to weakness and cowardice. It does not befit you. Give up this weakness of heart and rise, O conqueror of enemies.',
-    marathi = 'हे पार्था, अशा प्रकारच्या दुर्बलतेला बळी पडू नकोस; ती तुला शोभत नाही. हृदयातील ही क्षुद्र दुर्बलता सोडून उठ आणि आपल्या कर्तव्याला सामोरे जा.',
-    hindi = 'हे पार्थ, इस प्रकार की कायरता को प्राप्त मत हो; यह तुम्हें शोभा नहीं देती। हृदय की इस दुर्बलता को त्यागकर उठो और अपने कर्तव्य का सामना करो।',
-    meaning = 'Fear is natural, but allowing fear to stop you is a choice. Stand up and face the challenge.',
-    message = 'Courage does not mean having no fear; it means acting despite fear.'
-where id = 3;
-
-update public.shlokas set
-  solution = 'Patience / Tolerance (धैर्य / तितिक्षा)',
-  title = 'Patience in Difficult Times — Maintaining Equanimity',
-  sanskrit = 'मात्रास्पर्शास्तु कौन्तेय शीतोष्णसुखदुःखदाः ।\nआगमापायिनोऽनित्यास्तांस्तितिक्षस्व भारत ॥',
-  transliteration = 'mātrā-sparśās tu kaunteya śītoṣṇa-sukha-duḥkha-dāḥ | āgamāpāyino ’nityās tāṁs-titikṣasva bhārata ||',
-  english = 'O son of Kunti, the contact of the senses with their objects gives rise to temporary experiences of heat and cold, pleasure and pain. They come and go and are impermanent. Therefore, learn to tolerate them patiently.',
-  marathi = 'हे कुंतीपुत्र अर्जुना, इंद्रियांचा विषयांशी संपर्क झाल्यामुळे सुख-दुःख, उष्णता-थंडी यांसारखे अनुभव निर्माण होतात. हे अनुभव तात्पुरते आणि नश्वर आहेत. त्यामुळे त्यांना धैर्याने आणि संयमाने सहन कर.',
-  hindi = 'हे कुंतीपुत्र अर्जुन, इंद्रियों और उनके विषयों के संपर्क से सर्दी-गर्मी तथा सुख-दुःख की अनुभूति होती है। ये अनुभव आते-जाते और अस्थायी होते हैं। इसलिए इन्हें धैर्यपूर्वक सहन करना सीखो।',
-  meaning = 'Every difficult situation is temporary. Don''t allow temporary problems to disturb your permanent inner peace.',
-  message = 'Difficulties come and go. Patience helps you remain stable until the situation changes.'
-where id = 1;
-
-update public.shlokas set
-  solution = 'Self-Control (संयम / आत्मसंयम)',
-  title = 'Controlling Anger Before It Controls You',
-  sanskrit = 'क्रोधाद्भवति सम्मोहः सम्मोहात्स्मृतिविभ्रमः ।\nस्मृतिभ्रंशाद् बुद्धिनाशो बुद्धिनाशात्प्रणश्यति ॥',
-  transliteration = 'krodhād bhavati sammohaḥ sammohāt smṛti-vibhramaḥ | smṛti-bhraṁśād buddhi-nāśo buddhi-nāśāt praṇaśyati ||',
-  english = 'From anger comes delusion; from delusion comes loss of memory and judgment. From the loss of judgment comes destruction of discrimination, and when discrimination is destroyed, a person falls.',
-  marathi = 'क्रोधामुळे विवेक नष्ट होतो; विवेक नष्ट झाल्यामुळे स्मरणशक्ती आणि योग्य-अयोग्य यातील भेद करण्याची क्षमता कमी होते. त्यातून बुद्धीचा नाश होतो आणि शेवटी मनुष्याचा अधःपात होतो.',
-  hindi = 'क्रोध से मोह उत्पन्न होता है, मोह से स्मृति भ्रमित हो जाती है। स्मृति भ्रमित होने से बुद्धि का नाश होता है और बुद्धि का नाश होने पर मनुष्य का पतन हो जाता है।',
-  meaning = 'Anger can create a chain of bad decisions. Control your anger before it controls your actions.',
-  message = 'A moment of self-control can prevent a lifetime of regret.'
-where id = 2;
-
-update public.shlokas set
-  solution = 'Self-Belief / Follow Your Own Path (स्वधर्म)',
-  title = 'Your Path Is Your Own — Stop Comparing',
-  sanskrit = 'श्रेयान्स्वधर्मो विगुणः परधर्मात्स्वनुष्ठितात् ।\nस्वधर्मे निधनं श्रेयः परधर्मो भयावहः ॥',
-  transliteration = 'śreyān sva-dharmo viguṇaḥ para-dharmāt sv-anuṣṭhitāt | sva-dharme nidhanaṁ śreyaḥ para-dharmo bhayāvahaḥ ||',
-  english = 'It is better to perform one''s own duty, even imperfectly, than to perform another''s duty perfectly. It is better to live according to one''s own path; following another''s path is dangerous.',
-  marathi = 'दुसऱ्याचे कर्तव्य उत्तम प्रकारे करण्यापेक्षा स्वतःचे कर्तव्य जरी अपूर्णपणे केले तरी ते श्रेष्ठ आहे. स्वतःच्या मार्गावर चालणे अधिक चांगले आहे; दुसऱ्याच्या मार्गाचे अनुकरण करणे धोकादायक आहे.',
-  hindi = 'दूसरे के धर्म को अच्छी तरह करने की अपेक्षा अपने धर्म को अपूर्ण रूप से करना भी श्रेष्ठ है। अपने मार्ग पर चलना ही बेहतर है; दूसरे के मार्ग का अनुसरण करना भयावह हो सकता है।',
-  meaning = 'You don''t need to become someone else. Your journey, abilities, circumstances, and goals are different.',
-  message = 'Don''t compare your chapter 1 with someone else''s chapter 20.'
-where id = 4;
-
-update public.shlokas set
-  solution = 'Learning & Focus on Action (कर्म / प्रयत्न)',
-  title = 'Failure Is Part of the Journey — Focus on Your Effort',
-  sanskrit = 'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।\nमा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि ॥',
-  transliteration = 'karmaṇy evādhikāras te mā phaleṣu kadācana | mā karma-phala-hetur bhūr mā te saṅgo ’stv akarmaṇi ||',
-  english = 'You have the right to perform your actions, but not to the fruits of those actions. Do not consider yourself the sole cause of the results, nor become attached to inaction.',
-  marathi = 'तुला फक्त कर्म करण्याचा अधिकार आहे; त्याच्या फळावर तुझा अधिकार नाही. कर्माच्या फळालाच आपल्या कृतीचे एकमेव कारण मानू नकोस आणि निष्क्रियतेशीही आसक्त होऊ नकोस.',
-  hindi = 'तुम्हारा अधिकार केवल कर्म करने में है, उसके फल में कभी नहीं। कर्म के फल को ही अपने कर्म का एकमात्र उद्देश्य मत बनाओ और कर्म न करने में भी आसक्त मत हो।',
-  meaning = 'Do your best, learn from the result, improve your approach, and keep moving forward.',
-  message = 'A failed attempt is not wasted if it teaches you how to improve the next attempt.'
-where id = 5;
-
-update public.shlokas set
-  solution = 'Focus / Concentration (एकाग्रता)',
-  title = 'Master the Mind — From Distraction to Focus',
-  sanskrit = 'यतो यतो निश्चरति मनश्चञ्चलमस्थिरम् ।\nततस्ततो नियम्यैतदात्मन्येव वशं नयेत् ॥',
-  transliteration = 'yato yato niścarati manaś cañcalam asthiram | tatas tato niyamyaitad ātmany eva vaśaṁ nayet ||',
-  english = 'Whenever and wherever the restless and unsteady mind wanders, one should bring it back under control and direct it toward the Self.',
-  marathi = 'हे चंचल आणि अस्थिर मन जेव्हा जेव्हा आणि जिथे जिथे भटकते, तेव्हा तेव्हा त्याला संयमाने परत आणून आत्मनियंत्रणात ठेवावे.',
-  hindi = 'यह चंचल और अस्थिर मन जब-जब और जहाँ-जहाँ भटकता है, तब-तब उसे नियंत्रित करके वापस अपने लक्ष्य की ओर लाना चाहिए।',
-  meaning = 'Your mind will wander. Focus does not mean never getting distracted; it means bringing your attention back whenever you get distracted.',
-  message = 'You don''t need a perfectly focused mind; you need the discipline to bring it back.'
-where id = 6;
+-- Keep the identity sequence ahead of the seeded IDs for later admin inserts.
+select setval(pg_get_serial_sequence('public.shlokas', 'id'), greatest((select max(id) from public.shlokas), 1), true);
